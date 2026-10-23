@@ -28,8 +28,4 @@ Models/*.pt
 Thumbs.db
 .vscode/
 .idea/
-.venv/
-
-# Other files
-*.pyc
 *.ipynb_checkpoints/

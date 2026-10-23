@@ -54,7 +54,7 @@ MORGAN_RADIUS: int = 2
 MORGAN_FP_SIZE: int = 2048
 
 HIDDEN_DIM: int = 256
-DROPOUT_RATE: float = 0.30
+DROPOUT_RATE: int | float = 0.30
 BATCH_SIZE: int = 64
 LEARNING_RATE: float = 1e-4
 WEIGHT_DECAY: float = 1e-4
@@ -62,10 +62,7 @@ MAX_EPOCHS: int = 100
 EARLY_STOPPING_PATIENCE: int = 15
 N_MODEL_SEEDS: int = 5
 
-# 5. Chemical & Clinical Domain Constants
-ATOM_TYPES: list[str] = ["C", "N", "O", "S", "F", "Cl", "Br", "I", "P", "B", "Si", "Se"]
-ATOM_TO_IDX: dict[str, int] = {atom: idx for idx, atom in enumerate(ATOM_TYPES)}
-
+# 5. Clinical GBM Drug Constants
 GBM_DRUG_KEYWORDS: list[str] = [
     "Temozolomide",
     "TMZ",

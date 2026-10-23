@@ -3,10 +3,9 @@
 import unittest
 
 from src.config import (
-    ATOM_TO_IDX,
-    ATOM_TYPES,
     DATA_DIR,
     GBM_DRUG_KEYWORDS,
+    KEY_GBM_DRUGS_FOR_INSPECTION,
     MODELS_DIR,
     MORGAN_FP_SIZE,
     PROJECT_ROOT,
@@ -36,8 +35,8 @@ class TestConfig(unittest.TestCase):
 
     def test_domain_constants(self) -> None:
         self.assertEqual(MORGAN_FP_SIZE, 2048)
-        self.assertEqual(len(ATOM_TYPES), len(ATOM_TO_IDX))
         self.assertIn("Temozolomide", GBM_DRUG_KEYWORDS)
+        self.assertIn("Temozolomide", KEY_GBM_DRUGS_FOR_INSPECTION)
 
 
 if __name__ == "__main__":

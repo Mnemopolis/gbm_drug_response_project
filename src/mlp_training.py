@@ -30,7 +30,7 @@ from src.config import (
     MAX_EPOCHS,
     WEIGHT_DECAY,
 )
-from src.graph_data import create_dataloaders
+from src.dataset import create_dataloaders
 from src.mlp_model import BaselineMLP
 from src.standardization import unstandardize_target_labels
 from src.utils import get_device, set_seed

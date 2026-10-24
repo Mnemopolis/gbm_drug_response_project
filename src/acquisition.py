@@ -35,7 +35,7 @@ def load_raw_gdsc_gbm_records(
     model_file: Path = MODEL_FILE,
 ) -> pd.DataFrame:
     """Load GDSC2 records, filter for Glioblastoma (GBM), and map Sanger IDs to DepMap ModelID."""
-    gdsc_df = pd.read_csv(gdsc_file)
+    gdsc_df = pd.read_csv(gdsc_file, low_memory=False)
     gdsc_gbm = gdsc_df[
         gdsc_df["CANCER_TYPE"].str.contains("Glioblastoma", case=False, na=False)
     ].copy()
@@ -59,7 +59,7 @@ def extract_expression_features(
     Load protein-coding gene expression matrix (TPM log+1) for valid GBM cell lines
     and extract the MGMT expression proxy feature separately.
     """
-    expr_df = pd.read_csv(expr_file, index_col=0)
+    expr_df = pd.read_csv(expr_file, index_col=0, low_memory=False)
     if valid_cells is not None:
         expr_gbm = expr_df.loc[expr_df.index.intersection(valid_cells)].copy()
     else:
@@ -82,7 +82,7 @@ def extract_mutation_features(
     Load somatic hotspot mutation matrix for valid GBM cell lines, keeping default model
     entries and filtering out genes with zero mutations across the cohort.
     """
-    mut_df = pd.read_csv(mut_file)
+    mut_df = pd.read_csv(mut_file, low_memory=False)
     if "IsDefaultEntryForModel" in mut_df.columns:
         mut_df = mut_df[mut_df["IsDefaultEntryForModel"] == "Yes"].copy()
 
@@ -117,7 +117,7 @@ def convert_and_extract_methylation_features(
     if not methyl_txt_file.exists():
         return None
 
-    df_methylation = pd.read_csv(methyl_txt_file, sep="\t", index_col=0)
+    df_methylation = pd.read_csv(methyl_txt_file, sep="\t", index_col=0, low_memory=False)
     df_methylation.to_csv(methyl_csv_file)
 
     mgmt_rows = df_methylation.loc[

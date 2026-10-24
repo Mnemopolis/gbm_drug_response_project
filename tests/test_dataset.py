@@ -12,9 +12,10 @@ class TestDataset(unittest.TestCase):
     """Verify PyTorch Dataset and DataLoader construction."""
 
     def setUp(self) -> None:
-        df, expr_c, mut_c, mgmt_c = make_synthetic_merged_dataframe(
-            n_cells=10, n_drugs=12, seed=42, return_cols=True
-        )
+        df = make_synthetic_merged_dataframe(n_cells=10, n_drugs=12, seed=42)
+        expr_c = [c for c in df.columns if c.startswith("EXPR_")]
+        mut_c = [c for c in df.columns if c.startswith("MUT_")]
+        mgmt_c = ["MGMT_Expr"]
         tr_raw, te_raw = partition_dataframe_by_split(df, "random", test_size=0.2)
         self.trainval_df, self.test_df = fit_transform_cell_pca_features(
             tr_raw, te_raw, expr_c, mut_c, mgmt_c, n_pca=4
@@ -24,7 +25,7 @@ class TestDataset(unittest.TestCase):
     @unittest.skipUnless(HAS_TORCH, "PyTorch is not installed in this environment")
     def test_drug_response_dataset_and_dataloaders(self) -> None:
         train_loader, val_loader, test_loader, train_ds = create_dataloaders(
-            self.train_df, self.val_df, self.test_df, batch_size=8
+            self.train_df, self.val_df, self.test_df, batch_size=8, pin_memory=False
         )
         self.assertEqual(len(train_ds), len(self.train_df))
         self.assertGreater(train_ds.cell_dim, 0)

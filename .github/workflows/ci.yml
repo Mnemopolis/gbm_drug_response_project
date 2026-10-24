@@ -1,14 +1,24 @@
-name: Healthcare AI Pipeline CI
+name: Healthcare AI Pipeline CI & LecTrace Pages Deployment
 
 on:
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   test-and-audit:
-    name: Unit Tests & Anti-Leakage Pipeline Audit
+    name: Unit Tests (incl. LecTrace) & Anti-Leakage Pipeline Audit
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -37,3 +47,38 @@ jobs:
       - name: Run end-to-end synthetic pipeline validation & leakage audit
         run: |
           python scripts/06_validate_pipeline.py
+
+  deploy-lectrace-pages:
+    name: Build & Deploy LecTrace Presentation to GitHub Pages
+    needs: test-and-audit
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Lectrace CLI & Build Static Site
+        run: |
+          python -m pip install --upgrade pip
+          pip install git+https://github.com/CSC3160/lectrace.git
+          lectrace build Lectrace/01_gbm_ood_presentation.py --workspace-root . -o _site
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "_site"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

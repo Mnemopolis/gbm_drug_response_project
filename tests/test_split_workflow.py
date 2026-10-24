@@ -46,6 +46,10 @@ class TestSplitWorkflow(unittest.TestCase):
             ),
             patch("src.split_workflow.extract_mutation_features", return_value=mut_gbm),
             patch(
+                "src.split_workflow.convert_and_extract_methylation_features",
+                return_value=None,
+            ),
+            patch(
                 "src.split_workflow.build_drug_feature_table", return_value=drug_info
             ),
         ):

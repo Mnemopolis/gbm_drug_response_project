@@ -2,7 +2,8 @@
 
 Responsibilities:
 - Construct PyTorch Datasets for Morgan fingerprints and cell-line multi-omics features.
-- Provide DataLoader factory helpers with deterministic train/val/test batching.
+- Provide DataLoader factory helpers with deterministic train/val/test batching and optional
+  CUDA pinned memory support (`pin_memory`).
 """
 
 from typing import List, Optional, Tuple
@@ -65,14 +66,16 @@ def create_dataloaders(
     val_df: pd.DataFrame,
     test_df: pd.DataFrame,
     batch_size: int = BATCH_SIZE,
+    pin_memory: bool = False,
 ) -> Tuple["DataLoader", "DataLoader", "DataLoader", DrugResponseDataset]:
     """Create train, validation, and test DataLoaders with shared training label statistics."""
     train_ds = DrugResponseDataset(train_df)
     val_ds = DrugResponseDataset(val_df, y_mean=train_ds.y_mean, y_std=train_ds.y_std)
     test_ds = DrugResponseDataset(test_df, y_mean=train_ds.y_mean, y_std=train_ds.y_std)
 
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
+    use_pin = bool(pin_memory)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, pin_memory=use_pin)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, pin_memory=use_pin)
+    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, pin_memory=use_pin)
 
     return train_loader, val_loader, test_loader, train_ds

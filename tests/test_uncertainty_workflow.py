@@ -1,6 +1,7 @@
 """Unit tests exclusively for `src.uncertainty_workflow`."""
 
 import unittest
+
 import numpy as np
 import pandas as pd
 

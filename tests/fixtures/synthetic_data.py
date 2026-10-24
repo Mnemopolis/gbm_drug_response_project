@@ -4,17 +4,26 @@ splitting, standardization, pipeline auditing, baselines, uncertainty, and error
 """
 
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List, Tuple, Union
 import numpy as np
 import pandas as pd
 
 
-def make_synthetic_merged_dataframe(n_cells: int = 8, n_drugs: int = 10, seed: int = 42) -> pd.DataFrame:
+def make_synthetic_merged_dataframe(
+    n_cells: int = 8,
+    n_drugs: int = 10,
+    seed: int = 42,
+    return_cols: bool = False,
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, List[str], List[str], List[str]]]:
     """Create a synthetic merged multi-omics + drug dataframe with known dimensions."""
     rng = np.random.default_rng(seed)
     rows = []
     drugs = [f"Compound_{i}" for i in range(n_drugs)] + ["Temozolomide", "Irinotecan"]
     scaffolds = [f"Scaffold_{i % 4}" for i in range(len(drugs))]
+
+    expr_cols = [f"EXPR_G{g_i}" for g_i in range(20)]
+    mut_cols = [f"MUT_M{m_i}" for m_i in range(4)]
+    mgmt_cols = ["MGMT_Expr"]
 
     for c_i in range(n_cells):
         cell_id = f"ACH-000{c_i:03d}"
@@ -29,13 +38,16 @@ def make_synthetic_merged_dataframe(n_cells: int = 8, n_drugs: int = 10, seed: i
                 "LN_IC50": float(d_i * 0.5 - c_i * 0.15 + rng.normal(0, 0.1)),
                 "MGMT_Expr": float(rng.uniform(1.0, 4.0)),
             }
-            for g_i in range(20):
-                row[f"EXPR_G{g_i}"] = float(rng.normal(0, 1))
-            for m_i in range(4):
-                row[f"MUT_M{m_i}"] = float(rng.choice([0.0, 1.0]))
+            for col in expr_cols:
+                row[col] = float(rng.normal(0, 1))
+            for col in mut_cols:
+                row[col] = float(rng.choice([0.0, 1.0]))
             rows.append(row)
 
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    if return_cols:
+        return df, expr_cols, mut_cols, mgmt_cols
+    return df
 
 
 def write_synthetic_raw_csv_files(tmp_dir: Path) -> Dict[str, Path]:

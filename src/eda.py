@@ -8,6 +8,8 @@ scaffold counts, MGMT missingness, LN_IC50 distribution) and plots split histogr
 
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 

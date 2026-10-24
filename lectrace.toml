@@ -1,4 +1,4 @@
 [lectrace]
 title = "GBM Drug Response & OOD Generalization"
 lectures = ["Lectrace/01_gbm_ood_presentation.py"]
-output = "_site"
+output = "docs/lectrace"

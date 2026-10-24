@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -49,12 +49,9 @@ jobs:
           python scripts/06_validate_pipeline.py
 
   deploy-lectrace-pages:
-    name: Build & Deploy Showcase + LecTrace to GitHub Pages
+    name: Build & Deploy Showcase + LecTrace to /docs & GitHub Pages
     needs: test-and-audit
     if: (github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master')) || github.event_name == 'workflow_dispatch'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -66,30 +63,25 @@ jobs:
           python-version: "3.14"
           cache: "pip"
 
-      - name: Install Lectrace CLI & Build Static Site (Landing Page + LecTrace)
+      - name: Install Lectrace CLI & Build Static Site into docs/
         run: |
           python -m pip install --upgrade pip
           pip install lectrace
-          mkdir -p _site/lectrace
-          cp index.html _site/index.html
-          sed -i "s|__GITHUB_REPO_URL__|https://github.com/${{ github.repository }}|g" _site/index.html
-          lectrace build Lectrace/01_gbm_ood_presentation.py --output _site/lectrace --no-incremental
-          touch _site/.nojekyll
-          test -f _site/index.html
-          test -f _site/lectrace/index.html
+          mkdir -p docs/lectrace
+          cp index.html docs/index.html
+          sed -i "s|__GITHUB_REPO_URL__|https://github.com/${{ github.repository }}|g" docs/index.html
+          lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental
+          touch docs/.nojekyll
+          test -f docs/index.html
+          test -f docs/lectrace/index.html
 
-      - name: Setup GitHub Pages
-        id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
+      - name: Commit & Push Updated /docs Folder for Branch (/docs) GitHub Pages
         continue-on-error: true
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "_site"
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(pages): build showcase index.html and LecTrace into /docs [skip ci]"
+            git push
+          fi

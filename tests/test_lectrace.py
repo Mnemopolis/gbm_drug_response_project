@@ -160,6 +160,8 @@ class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
         self.assertIn("0.87 Spearman was a drug-mean illusion", html_text)
         self.assertIn("Relative ranking yes, absolute dosing no", html_text)
         self.assertNotIn("<input", html_text)
+        self.assertNotIn("\\sigma", html_text)
+        self.assertNotIn("$0.530$", html_text)
 
     def test_lectrace_toml_config_exists_and_valid(self):
         toml_path = REPO_ROOT / "lectrace.toml"
@@ -167,7 +169,7 @@ class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
         content = toml_path.read_text(encoding="utf-8")
         self.assertIn("[lectrace]", content)
         self.assertIn("Lectrace/01_gbm_ood_presentation.py", content)
-        self.assertIn('output = "_site"', content)
+        self.assertIn('output = "docs/lectrace"', content)
 
     def test_readme_documents_lectrace_cli_and_states(self):
         readme_path = REPO_ROOT / "README.md"
@@ -186,10 +188,11 @@ class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
         self.assertTrue(ci_path.is_file())
         ci_text = ci_path.read_text(encoding="utf-8")
         self.assertIn("pip install lectrace", ci_text)
-        self.assertIn("cp index.html _site/index.html", ci_text)
-        self.assertIn("lectrace build Lectrace/01_gbm_ood_presentation.py --output _site/lectrace --no-incremental", ci_text)
-        self.assertIn("touch _site/.nojekyll", ci_text)
-        self.assertIn("enablement: true", ci_text)
+        self.assertIn("cp index.html docs/index.html", ci_text)
+        self.assertIn("lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental", ci_text)
+        self.assertIn("touch docs/.nojekyll", ci_text)
+        self.assertTrue((REPO_ROOT / "docs" / "index.html").is_file())
+        self.assertTrue((REPO_ROOT / "docs" / ".nojekyll").is_file())
         self.assertIn('"3.14"', ci_text)
         self.assertNotIn('"3.10"', ci_text)
         self.assertNotIn('"3.11"', ci_text)

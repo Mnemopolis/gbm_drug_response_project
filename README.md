@@ -108,11 +108,12 @@ Install Lectrace from PyPI (`pip install lectrace`) and launch the local interac
 ```bash
 lectrace serve Lectrace/01_gbm_ood_presentation.py
 ```
-To build the complete **GitHub Pages** bundle (`_site/index.html` + `_site/lectrace/index.html`, ensuring **Settings → Pages → Build and deployment → Source** is set to **GitHub Actions**):
+To build the complete **GitHub Pages** bundle into the `/docs` folder (`docs/index.html` + `docs/lectrace/index.html`, supporting **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `/docs`**):
 ```bash
-mkdir -p _site/lectrace
-cp index.html _site/index.html
-lectrace build Lectrace/01_gbm_ood_presentation.py --output _site/lectrace --no-incremental
+mkdir -p docs/lectrace
+cp index.html docs/index.html
+lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental
+touch docs/.nojekyll
 ```
 
 ### 5.2 Selected Execution States (10-Minute Walkthrough)

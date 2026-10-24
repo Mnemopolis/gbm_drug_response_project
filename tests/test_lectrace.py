@@ -1,15 +1,16 @@
 """
-Unit tests for the simplified Lectrace presentation (`Lectrace/`).
+Unit tests for the simplified Lectrace presentation (`Lectrace/`) and Showcase Landing Page (`index.html`).
 
 Verifies:
 1. `Lectrace/` contains ONLY `_project_data.py` and `01_gbm_ood_presentation.py`.
 2. `Lectrace/_project_data.py` provides reproducible GBM cell-line, drug, and benchmark inputs
    implementing the `__lectrace__()` serialization protocol.
-3. `Lectrace/01_gbm_ood_presentation.py` defines `main()`, uses official Lectrace directives
-   and rendering calls, and deterministically executes all 4 selected execution states.
-4. `lectrace.toml`, `README.md`, `pyproject.toml`, and `.github/workflows/ci.yml` configure
-   and document the official Lectrace PyPI package (`pip install lectrace`), CLI commands,
-   and Python 3.14 environment in GitHub Actions.
+3. `Lectrace/01_gbm_ood_presentation.py` defines `main()`, isolates core `lectrace` imports
+   from optional `table` import, uses official Lectrace directives and rendering calls, and
+   deterministically executes all 4 selected execution states.
+4. `index.html`, `lectrace.toml`, `README.md`, `pyproject.toml`, and `.github/workflows/ci.yml`
+   configure and document the single-file showcase landing page, official Lectrace PyPI package
+   (`pip install lectrace`), CLI commands, and Python 3.14 environment in GitHub Actions.
 """
 import importlib.util
 import sys
@@ -83,9 +84,11 @@ class TestLectracePresentationStates(unittest.TestCase):
     def setUpClass(cls):
         cls.pres = _load_presentation_module()
 
-    def test_script_directives_and_rendering_calls_present(self):
+    def test_script_directives_and_isolated_imports_present(self):
         script_text = (LECTRACE_DIR / "01_gbm_ood_presentation.py").read_text(encoding="utf-8")
         self.assertIn("def main():", script_text)
+        self.assertIn("from lectrace import Reference, link, note, plot, text", script_text)
+        self.assertIn("from lectrace import table", script_text)
         self.assertIn("# @inspect", script_text)
         self.assertIn("# @clear", script_text)
         self.assertIn("# @stepover", script_text)
@@ -139,8 +142,24 @@ class TestLectracePresentationStates(unittest.TestCase):
         self.pres.main()
 
 
-class TestLectraceReadmeAndCI(unittest.TestCase):
-    """Verify lectrace.toml, README.md, and CI workflow use the official Lectrace CLI and Python 3.14."""
+class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
+    """Verify index.html, lectrace.toml, README.md, and CI workflow configuration."""
+
+    def test_index_html_showcase_exists_and_valid(self):
+        html_path = REPO_ROOT / "index.html"
+        self.assertTrue(html_path.is_file())
+        html_text = html_path.read_text(encoding="utf-8")
+        self.assertIn("<!DOCTYPE html>", html_text)
+        self.assertIn("./lectrace/", html_text)
+        self.assertIn("0.8744", html_text)
+        self.assertIn("0.8752", html_text)
+        self.assertIn("0.2905", html_text)
+        self.assertIn("0.530", html_text)
+        self.assertIn("Random Split Interaction Gain", html_text)
+        self.assertIn("One model, three views of what it memorized", html_text)
+        self.assertIn("0.87 Spearman was a drug-mean illusion", html_text)
+        self.assertIn("Relative ranking yes, absolute dosing no", html_text)
+        self.assertNotIn("<input", html_text)
 
     def test_lectrace_toml_config_exists_and_valid(self):
         toml_path = REPO_ROOT / "lectrace.toml"
@@ -156,23 +175,25 @@ class TestLectraceReadmeAndCI(unittest.TestCase):
         content = readme_path.read_text(encoding="utf-8")
         self.assertIn("pip install lectrace", content)
         self.assertIn("lectrace serve Lectrace/01_gbm_ood_presentation.py", content)
-        self.assertIn("lectrace build --output _site", content)
+        self.assertIn("index.html", content)
         self.assertNotIn("git+https://github.com/CSC3160/lectrace.git", content)
         self.assertNotIn("--workspace-root", content)
         for state_idx in range(1, 5):
             self.assertIn(f"Execution State {state_idx}", content)
 
-    def test_ci_workflow_uses_lectrace_cli_and_python_314(self):
+    def test_ci_workflow_deploys_showcase_and_lectrace_on_python_314(self):
         ci_path = REPO_ROOT / ".github" / "workflows" / "ci.yml"
         self.assertTrue(ci_path.is_file())
         ci_text = ci_path.read_text(encoding="utf-8")
         self.assertIn("pip install lectrace", ci_text)
-        self.assertIn("lectrace build --output _site", ci_text)
+        self.assertIn("cp index.html _site/index.html", ci_text)
+        self.assertIn("lectrace build Lectrace/01_gbm_ood_presentation.py --output _site/lectrace --no-incremental", ci_text)
+        self.assertIn("touch _site/.nojekyll", ci_text)
+        self.assertIn("enablement: true", ci_text)
         self.assertIn('"3.14"', ci_text)
         self.assertNotIn('"3.10"', ci_text)
         self.assertNotIn('"3.11"', ci_text)
         self.assertNotIn("git+https://github.com/CSC3160/lectrace.git", ci_text)
-        self.assertNotIn("--workspace-root", ci_text)
 
 
 if __name__ == "__main__":

@@ -9,12 +9,16 @@ from typing import Optional
 import math
 import sys
 
-_LECTRACE_DIR = Path(__file__).resolve().parent
+_LECTRACE_DIR = (
+    Path(__file__).resolve().parent
+    if "__file__" in globals()
+    else (Path.cwd() / "Lectrace").resolve()
+)
 if str(_LECTRACE_DIR) not in sys.path:
     sys.path.insert(0, str(_LECTRACE_DIR))
 
 try:
-    from lectrace import Reference, link, note, plot, table, text
+    from lectrace import Reference, link, note, plot, text
 except ImportError:  # Lightweight stub matching official Lectrace API signatures
     @dataclass(frozen=True)
     class Reference:
@@ -32,9 +36,6 @@ except ImportError:  # Lightweight stub matching official Lectrace API signature
     def note(message: str) -> None:
         return None
 
-    def table(rows, headers=None, caption=None, style=None) -> None:
-        return None
-
     def plot(spec) -> None:
         return None
 
@@ -50,6 +51,29 @@ except ImportError:  # Lightweight stub matching official Lectrace API signature
         notes=None,
         style=None,
     ) -> None:
+        return None
+
+try:
+    from lectrace import table
+except ImportError:
+    def table(rows, headers=None, caption=None, style=None) -> None:
+        """Fallback Markdown table renderer via `text()` if `lectrace.table` is absent."""
+        if not rows:
+            return None
+        if isinstance(rows[0], dict):
+            cols = list(headers) if headers else list(rows[0].keys())
+            body_rows = [[r.get(c, "—") for c in cols] for r in rows]
+        else:
+            cols = list(headers) if headers else [f"Col {i + 1}" for i in range(len(rows[0]))]
+            body_rows = rows
+        lines = []
+        if caption:
+            lines.append(f"**{caption}**\n")
+        lines.append("| " + " | ".join(str(c) for c in cols) + " |")
+        lines.append("| " + " | ".join("---" for _ in cols) + " |")
+        for r in body_rows:
+            lines.append("| " + " | ".join("—" if v is None else str(v) for v in r) + " |")
+        text("\n".join(lines))
         return None
 
 from _project_data import (

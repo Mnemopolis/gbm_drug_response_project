@@ -19,7 +19,7 @@ This repository implements a leakage-free multimodal deep learning benchmark for
 
 ```text
 gbm_drug_response_project/
-├── .github/workflows/ci.yml              # GitHub Actions CI & Lectrace Pages deployment (Python 3.14)
+├── .github/workflows/ci.yml              # GitHub Actions CI & GitHub Pages deployment (Python 3.14)
 ├── Data/                                 # Raw GDSC2, DepMap & SMILES CSVs (Git-ignored)
 ├── Lectrace/                             # Interactive Execution-Explanation Presentation
 │   ├── _project_data.py                  # Small, reproducible GBM inputs & benchmarks
@@ -39,6 +39,7 @@ gbm_drug_response_project/
 │   └── *_workflow.py, workflow.py        # Stage orchestrators & master pipeline workflow
 ├── scripts/                              # Step-by-step CLI scripts (01 to 06)
 ├── tests/                                # 1-to-1 unit test suite (21 test files, incl. test_lectrace.py)
+├── index.html                            # Single-file Product Showcase Landing Page (GitHub Pages root)
 ├── lectrace.toml                         # Official Lectrace CLI configuration
 ├── main.py                               # Unified CLI entry point
 ├── pyproject.toml & requirements.txt     # Package metadata & dependencies
@@ -95,20 +96,23 @@ python scripts/05_error_analysis_and_plots.py
 
 ---
 
-## 5. Execution-Explanation Presentation Using Lectrace (`Lectrace/`)
+## 5. Showcase Landing Page (`index.html`) & Lectrace Presentation (`Lectrace/`)
 
-The `Lectrace/` directory contains two files for our 10-minute interactive execution-explanation presentation (configured via `lectrace.toml` at the repository root):
-- `Lectrace/_project_data.py`: Small, reproducible GBM cell-line, drug, and benchmark inputs implementing `__lectrace__()`.
-- `Lectrace/01_gbm_ood_presentation.py`: Main Lectrace script with narrative `text()`, speaker `note()`, `Reference()` code links, `table()`, and Vega-Lite `plot()`.
+- **Root Showcase Landing Page (`index.html`)**: Self-contained interactive product showcase deployed at the GitHub Pages root (`https://<username>.github.io/<repo>/`), featuring an interactive split regime explorer, clinical GBM drug inspector, embedded diagnostic figures, and links to `./lectrace/`, the GitHub repository, and reserved UI slots for the 10-minute video and technical report PDF.
+- **Interactive LecTrace Presentation (`Lectrace/`)**:
+  - `Lectrace/_project_data.py`: Small, reproducible GBM cell-line, drug, and benchmark inputs implementing `__lectrace__()`.
+  - `Lectrace/01_gbm_ood_presentation.py`: Main Lectrace script with narrative `text()`, speaker `note()`, `Reference()` code links, `table()`, and Vega-Lite `plot()`.
 
 ### 5.1 How to Run Lectrace (Official Lectrace CLI, Requires Python $\ge 3.12$ / $3.14$)
 Install Lectrace from PyPI (`pip install lectrace`) and launch the local interactive server from the repository root:
 ```bash
 lectrace serve Lectrace/01_gbm_ood_presentation.py
 ```
-To build the static HTML bundle for **GitHub Pages** deployment:
+To build the complete **GitHub Pages** bundle (`_site/index.html` + `_site/lectrace/index.html`, ensuring **Settings → Pages → Build and deployment → Source** is set to **GitHub Actions**):
 ```bash
-lectrace build --output _site
+mkdir -p _site/lectrace
+cp index.html _site/index.html
+lectrace build Lectrace/01_gbm_ood_presentation.py --output _site/lectrace --no-incremental
 ```
 
 ### 5.2 Selected Execution States (10-Minute Walkthrough)
@@ -116,7 +120,7 @@ lectrace build --output _site
 - **Introduction (Minutes 0:00 – 2:30)**: Introduces GBM clinical resistance to Temozolomide (`MGMT` repair), the danger of shortcut learning on random splits, and our Two-Tower `BaselineMLP` architecture ($5,107$ GBM drug–cell pairs).
 - **Execution State 1 — Leakage-Free OOD Splitting & Train-Only Standardization (`trace_state_1_leakage_free_preprocessing`)**:
   - *What happens*: Partitions cell lines (`Leave-Cell-Out`) and Bemis–Murcko scaffolds (`Scaffold`), fitting gene-expression mean/std strictly on training cell lines.
-  - *What changes*: `cell_overlap` and `scaffold_overlap` evaluate to `0` (`leakage_audit_passed = True`), and held-out `GAMG` is standardized using frozen training moments (`gamg_z_gene0_standardized = +3.5769`).
+  - *What changes*: `cell_overlap` and `scaffold_overlap` evaluate to `0` (`leakage_audit_passed = True`), and held-out `GAMG` is standardized using frozen training moments (`gamg_z_gene0_standardized = +9.4545`).
   - *Why it matters*: Prevents test-set gene covariance and drug potency priors from leaking into training representations.
 - **Execution State 2 — Two-Tower `BaselineMLP` Forward Pass & Latent Fusion (`trace_state_2_two_tower_forward_pass`)**:
   - *What happens*: Traces a forward pass for **Temozolomide** on `MGMT`-low **U-87 MG** (`mgmt_expr = 0.42`, sensitive) vs. `MGMT`-high **T98G** (`mgmt_expr = 5.84`, resistant).
@@ -134,7 +138,7 @@ lectrace build --output _site
 
 ---
 
-## 6.  Key Experimental Results & Visual Diagnostics
+## 6. Key Experimental Results & Visual Diagnostics
 
 After deduplication and multi-omics alignment, the final GBM cohort comprises **$5,107$ unique `(drug, cell_line)` pairs** spanning **$24$ GBM/Gliosarcoma cell lines** and **$243$ unique drugs**.
 

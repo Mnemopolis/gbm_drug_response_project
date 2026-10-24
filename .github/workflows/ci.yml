@@ -68,11 +68,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install lectrace
           mkdir -p docs/lectrace
-          cp index.html docs/index.html
+          if [ -f index.html ]; then cp index.html docs/index.html; fi
+          test -f docs/index.html
           sed -i "s|__GITHUB_REPO_URL__|https://github.com/${{ github.repository }}|g" docs/index.html
           lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental
           touch docs/.nojekyll
-          test -f docs/index.html
           test -f docs/lectrace/index.html
 
       - name: Commit & Push Updated /docs Folder for Branch (/docs) GitHub Pages

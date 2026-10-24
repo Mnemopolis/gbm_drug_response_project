@@ -1,5 +1,5 @@
 """
-Unit tests for the simplified Lectrace presentation (`Lectrace/`) and Showcase Landing Page (`index.html`).
+Unit tests for the simplified Lectrace presentation (`Lectrace/`) and Showcase Landing Page (`docs/index.html`).
 
 Verifies:
 1. `Lectrace/` contains ONLY `_project_data.py` and `01_gbm_ood_presentation.py`.
@@ -8,8 +8,8 @@ Verifies:
 3. `Lectrace/01_gbm_ood_presentation.py` defines `main()`, isolates core `lectrace` imports
    from optional `table` import, uses official Lectrace directives and rendering calls, and
    deterministically executes all 4 selected execution states.
-4. `index.html`, `lectrace.toml`, `README.md`, `pyproject.toml`, and `.github/workflows/ci.yml`
-   configure and document the single-file showcase landing page, official Lectrace PyPI package
+4. `docs/index.html`, `lectrace.toml`, `README.md`, `pyproject.toml`, and `.github/workflows/ci.yml`
+   configure and document the single-file showcase landing page in `/docs`, official Lectrace PyPI package
    (`pip install lectrace`), CLI commands, and Python 3.14 environment in GitHub Actions.
 """
 import importlib.util
@@ -143,11 +143,16 @@ class TestLectracePresentationStates(unittest.TestCase):
 
 
 class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
-    """Verify index.html, lectrace.toml, README.md, and CI workflow configuration."""
+    """Verify docs/index.html, lectrace.toml, README.md, and CI workflow configuration."""
 
     def test_index_html_showcase_exists_and_valid(self):
-        html_path = REPO_ROOT / "index.html"
-        self.assertTrue(html_path.is_file())
+        docs_html_path = REPO_ROOT / "docs" / "index.html"
+        root_html_path = REPO_ROOT / "index.html"
+        html_path = docs_html_path if docs_html_path.is_file() else root_html_path
+        self.assertTrue(
+            html_path.is_file(),
+            "Expected showcase index.html in docs/index.html (or root index.html)",
+        )
         html_text = html_path.read_text(encoding="utf-8")
         self.assertIn("<!DOCTYPE html>", html_text)
         self.assertIn("./lectrace/", html_text)
@@ -177,7 +182,7 @@ class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
         content = readme_path.read_text(encoding="utf-8")
         self.assertIn("pip install lectrace", content)
         self.assertIn("lectrace serve Lectrace/01_gbm_ood_presentation.py", content)
-        self.assertIn("index.html", content)
+        self.assertIn("docs/index.html", content)
         self.assertNotIn("git+https://github.com/CSC3160/lectrace.git", content)
         self.assertNotIn("--workspace-root", content)
         for state_idx in range(1, 5):
@@ -188,8 +193,11 @@ class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
         self.assertTrue(ci_path.is_file())
         ci_text = ci_path.read_text(encoding="utf-8")
         self.assertIn("pip install lectrace", ci_text)
-        self.assertIn("cp index.html docs/index.html", ci_text)
-        self.assertIn("lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental", ci_text)
+        self.assertIn("docs/index.html", ci_text)
+        self.assertIn(
+            "lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental",
+            ci_text,
+        )
         self.assertIn("touch docs/.nojekyll", ci_text)
         self.assertTrue((REPO_ROOT / "docs" / "index.html").is_file())
         self.assertTrue((REPO_ROOT / "docs" / ".nojekyll").is_file())

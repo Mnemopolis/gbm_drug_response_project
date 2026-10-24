@@ -21,6 +21,10 @@ This repository implements a leakage-free multimodal deep learning benchmark for
 gbm_drug_response_project/
 ├── .github/workflows/ci.yml              # GitHub Actions CI & GitHub Pages deployment (Python 3.14)
 ├── Data/                                 # Raw GDSC2, DepMap & SMILES CSVs (Git-ignored)
+├── docs/                                 # GitHub Pages root (Branch -> /docs deployment)
+│   ├── index.html                        # Single-file Product Showcase Landing Page
+│   ├── .nojekyll                         # Bypass Jekyll processing on GitHub Pages
+│   └── lectrace/                         # Static LecTrace presentation bundle built by CI
 ├── Lectrace/                             # Interactive Execution-Explanation Presentation
 │   ├── _project_data.py                  # Small, reproducible GBM inputs & benchmarks
 │   └── 01_gbm_ood_presentation.py        # 10-minute Lectrace presentation script
@@ -39,8 +43,7 @@ gbm_drug_response_project/
 │   └── *_workflow.py, workflow.py        # Stage orchestrators & master pipeline workflow
 ├── scripts/                              # Step-by-step CLI scripts (01 to 06)
 ├── tests/                                # 1-to-1 unit test suite (21 test files, incl. test_lectrace.py)
-├── index.html                            # Single-file Product Showcase Landing Page (GitHub Pages root)
-├── lectrace.toml                         # Official Lectrace CLI configuration
+├── lectrace.toml                         # Official Lectrace CLI configuration (outputs to docs/lectrace)
 ├── main.py                               # Unified CLI entry point
 ├── pyproject.toml & requirements.txt     # Package metadata & dependencies
 └── README.md
@@ -96,9 +99,9 @@ python scripts/05_error_analysis_and_plots.py
 
 ---
 
-## 5. Showcase Landing Page (`index.html`) & Lectrace Presentation (`Lectrace/`)
+## 5. Showcase Landing Page (`docs/index.html`) & Lectrace Presentation (`Lectrace/`)
 
-- **Root Showcase Landing Page (`index.html`)**: Self-contained interactive product showcase deployed at the GitHub Pages root (`https://<username>.github.io/<repo>/`), featuring an interactive split regime explorer, clinical GBM drug inspector, embedded diagnostic figures, and links to `./lectrace/`, the GitHub repository, and reserved UI slots for the 10-minute video and technical report PDF.
+- **Showcase Landing Page (`docs/index.html`)**: Self-contained interactive product showcase deployed from `/docs` at the GitHub Pages root (`https://<username>.github.io/<repo>/`), featuring an interactive split regime explorer, clinical GBM drug inspector, embedded diagnostic figures, and links to `./lectrace/`, the GitHub repository, and reserved UI slots for the 10-minute video and technical report PDF.
 - **Interactive LecTrace Presentation (`Lectrace/`)**:
   - `Lectrace/_project_data.py`: Small, reproducible GBM cell-line, drug, and benchmark inputs implementing `__lectrace__()`.
   - `Lectrace/01_gbm_ood_presentation.py`: Main Lectrace script with narrative `text()`, speaker `note()`, `Reference()` code links, `table()`, and Vega-Lite `plot()`.
@@ -111,7 +114,6 @@ lectrace serve Lectrace/01_gbm_ood_presentation.py
 To build the complete **GitHub Pages** bundle into the `/docs` folder (`docs/index.html` + `docs/lectrace/index.html`, supporting **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `/docs`**):
 ```bash
 mkdir -p docs/lectrace
-cp index.html docs/index.html
 lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental
 touch docs/.nojekyll
 ```

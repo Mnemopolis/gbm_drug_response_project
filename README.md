@@ -39,6 +39,7 @@ gbm_drug_response_project/
 │   └── *_workflow.py, workflow.py        # Stage orchestrators & master pipeline workflow
 ├── scripts/                              # Step-by-step CLI scripts (01 to 06)
 ├── tests/                                # 1-to-1 unit test suite (21 test files, incl. test_lectrace.py)
+├── lectrace.toml                         # Official Lectrace CLI configuration
 ├── main.py                               # Unified CLI entry point
 ├── pyproject.toml & requirements.txt     # Package metadata & dependencies
 └── README.md
@@ -78,18 +79,18 @@ python scripts/05_error_analysis_and_plots.py
 
 ## 4. Execution-Explanation Presentation Using Lectrace (`Lectrace/`)
 
-The `Lectrace/` directory contains two files for our 10-minute interactive execution-explanation presentation:
+The `Lectrace/` directory contains two files for our 10-minute interactive execution-explanation presentation (configured via `lectrace.toml` at the repository root):
 - `Lectrace/_project_data.py`: Small, reproducible GBM cell-line, drug, and benchmark inputs implementing `__lectrace__()`.
 - `Lectrace/01_gbm_ood_presentation.py`: Main Lectrace script with narrative `text()`, speaker `note()`, `Reference()` code links, `table()`, and Vega-Lite `plot()`.
 
 ### 4.1 How to Run Lectrace (Official Lectrace CLI)
-Install Lectrace (`pip install git+https://github.com/CSC3160/lectrace.git`) and launch the local interactive server from the repository root:
+Install Lectrace from PyPI (`pip install lectrace`) and launch the local interactive server from the repository root:
 ```bash
-lectrace serve Lectrace/01_gbm_ood_presentation.py --workspace-root .
+lectrace serve Lectrace/01_gbm_ood_presentation.py
 ```
 To build the static HTML bundle for **GitHub Pages** deployment:
 ```bash
-lectrace build Lectrace/01_gbm_ood_presentation.py --workspace-root . -o _site
+lectrace build --output _site
 ```
 
 ### 4.2 Selected Execution States (10-Minute Walkthrough)

@@ -17,6 +17,7 @@ dependencies = [
     "matplotlib>=3.7.0",
     "torch>=2.0.0",
     "rdkit>=2023.3.1",
+    "lectrace>=0.1.0",
 ]
 
 [project.optional-dependencies]

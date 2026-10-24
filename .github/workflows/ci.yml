@@ -37,7 +37,7 @@ jobs:
       - name: Install core dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install numpy pandas scipy scikit-learn matplotlib pytest rdkit
+          pip install numpy pandas scipy scikit-learn matplotlib pytest rdkit lectrace
           pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Run automated unit test suite (pytest)
@@ -64,12 +64,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       - name: Install Lectrace CLI & Build Static Site
         run: |
           python -m pip install --upgrade pip
-          pip install git+https://github.com/CSC3160/lectrace.git
-          lectrace build Lectrace/01_gbm_ood_presentation.py --workspace-root . -o _site
+          pip install lectrace
+          lectrace build --output _site
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5

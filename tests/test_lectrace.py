@@ -7,7 +7,8 @@ Verifies:
    implementing the `__lectrace__()` serialization protocol.
 3. `Lectrace/01_gbm_ood_presentation.py` defines `main()`, uses official Lectrace directives
    and rendering calls, and deterministically executes all 4 selected execution states.
-4. `README.md` documents the official Lectrace CLI commands and the 4 execution states.
+4. `lectrace.toml`, `README.md`, and `.github/workflows/ci.yml` configure and document the
+   official Lectrace PyPI package (`pip install lectrace`) and CLI commands.
 """
 import importlib.util
 import sys
@@ -138,14 +139,25 @@ class TestLectracePresentationStates(unittest.TestCase):
 
 
 class TestLectraceReadmeAndCI(unittest.TestCase):
-    """Verify README.md and CI workflow document the official Lectrace CLI and 4 states."""
+    """Verify lectrace.toml, README.md, and CI workflow use the official Lectrace CLI."""
+
+    def test_lectrace_toml_config_exists_and_valid(self):
+        toml_path = REPO_ROOT / "lectrace.toml"
+        self.assertTrue(toml_path.is_file())
+        content = toml_path.read_text(encoding="utf-8")
+        self.assertIn("[lectrace]", content)
+        self.assertIn("Lectrace/01_gbm_ood_presentation.py", content)
+        self.assertIn('output = "_site"', content)
 
     def test_readme_documents_lectrace_cli_and_states(self):
         readme_path = REPO_ROOT / "README.md"
         self.assertTrue(readme_path.is_file())
         content = readme_path.read_text(encoding="utf-8")
-        self.assertIn("lectrace serve Lectrace/01_gbm_ood_presentation.py --workspace-root .", content)
-        self.assertIn("lectrace build Lectrace/01_gbm_ood_presentation.py --workspace-root . -o _site", content)
+        self.assertIn("pip install lectrace", content)
+        self.assertIn("lectrace serve Lectrace/01_gbm_ood_presentation.py", content)
+        self.assertIn("lectrace build --output _site", content)
+        self.assertNotIn("git+https://github.com/CSC3160/lectrace.git", content)
+        self.assertNotIn("--workspace-root", content)
         for state_idx in range(1, 5):
             self.assertIn(f"Execution State {state_idx}", content)
 
@@ -153,7 +165,10 @@ class TestLectraceReadmeAndCI(unittest.TestCase):
         ci_path = REPO_ROOT / ".github" / "workflows" / "ci.yml"
         self.assertTrue(ci_path.is_file())
         ci_text = ci_path.read_text(encoding="utf-8")
-        self.assertIn("lectrace build Lectrace/01_gbm_ood_presentation.py --workspace-root . -o _site", ci_text)
+        self.assertIn("pip install lectrace", ci_text)
+        self.assertIn("lectrace build --output _site", ci_text)
+        self.assertNotIn("git+https://github.com/CSC3160/lectrace.git", ci_text)
+        self.assertNotIn("--workspace-root", ci_text)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,10 @@ __pycache__/
 build/
 dist/
 
+# Lectrace build output & incremental cache
+_site/
+.lectrace_cache.json
+
 # Large raw multi-omics CSVs/TXTs (keep Data/.gitkeep)
 Data/*.csv
 Data/*.txt
@@ -29,4 +33,3 @@ Thumbs.db
 .vscode/
 .idea/
 *.ipynb_checkpoints/
-_site/

@@ -1,0 +1,12 @@
+{
+  "version": "2",
+  "traces": [
+    {
+      "id": "01_gbm_ood_presentation",
+      "title": "Deep Learning for Glioblastoma (GBM) Drug Response & OOD Generalization\n**10-Minute Execution-Explanation Presentation**\n\n### 1. Clinical Problem & Motivation (Minutes 0:00 \u2013 2:30)\n- **Clinical Need**: Glioblastoma (GBM) is the most aggressive primary brain tumor ($<15$ months median survival). Predicting drug response ($\\ln(\\text{IC}_{50})$) from multi-omics profiles is key to precision oncology.\n- **The OOD Challenge**: Models evaluated on **in-distribution random splits** often achieve high correlation ($r_s > 0.85$) via **shortcut learning** (memorizing average drug toxicity) but fail on **unseen chemical scaffolds**.",
+      "path": "traces/01_gbm_ood_presentation.json",
+      "step_count": 91,
+      "built_at": "2026-10-24T21:47:40.177745+00:00"
+    }
+  ]
+}

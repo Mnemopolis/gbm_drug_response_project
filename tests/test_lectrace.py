@@ -7,8 +7,9 @@ Verifies:
    implementing the `__lectrace__()` serialization protocol.
 3. `Lectrace/01_gbm_ood_presentation.py` defines `main()`, uses official Lectrace directives
    and rendering calls, and deterministically executes all 4 selected execution states.
-4. `lectrace.toml`, `README.md`, and `.github/workflows/ci.yml` configure and document the
-   official Lectrace PyPI package (`pip install lectrace`) and CLI commands.
+4. `lectrace.toml`, `README.md`, `pyproject.toml`, and `.github/workflows/ci.yml` configure
+   and document the official Lectrace PyPI package (`pip install lectrace`), CLI commands,
+   and Python 3.14 environment in GitHub Actions.
 """
 import importlib.util
 import sys
@@ -139,7 +140,7 @@ class TestLectracePresentationStates(unittest.TestCase):
 
 
 class TestLectraceReadmeAndCI(unittest.TestCase):
-    """Verify lectrace.toml, README.md, and CI workflow use the official Lectrace CLI."""
+    """Verify lectrace.toml, README.md, and CI workflow use the official Lectrace CLI and Python 3.14."""
 
     def test_lectrace_toml_config_exists_and_valid(self):
         toml_path = REPO_ROOT / "lectrace.toml"
@@ -161,12 +162,15 @@ class TestLectraceReadmeAndCI(unittest.TestCase):
         for state_idx in range(1, 5):
             self.assertIn(f"Execution State {state_idx}", content)
 
-    def test_ci_workflow_uses_lectrace_cli(self):
+    def test_ci_workflow_uses_lectrace_cli_and_python_314(self):
         ci_path = REPO_ROOT / ".github" / "workflows" / "ci.yml"
         self.assertTrue(ci_path.is_file())
         ci_text = ci_path.read_text(encoding="utf-8")
         self.assertIn("pip install lectrace", ci_text)
         self.assertIn("lectrace build --output _site", ci_text)
+        self.assertIn('"3.14"', ci_text)
+        self.assertNotIn('"3.10"', ci_text)
+        self.assertNotIn('"3.11"', ci_text)
         self.assertNotIn("git+https://github.com/CSC3160/lectrace.git", ci_text)
         self.assertNotIn("--workspace-root", ci_text)
 

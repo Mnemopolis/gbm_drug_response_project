@@ -1,6 +1,6 @@
 # Deep Learning for Glioblastoma (GBM) Drug Response & OOD Generalization
 
-**Course Final Mini-Project**: *Deep Learning in Healthcare AI*
+**Course Final Mini-Project**: *MD6329 Deep Learning in Healthcare AI*
 
 ---
 
@@ -19,7 +19,7 @@ This repository implements a leakage-free multimodal deep learning benchmark for
 
 ```text
 gbm_drug_response_project/
-├── .github/workflows/ci.yml              # GitHub Actions CI & Lectrace Pages deployment
+├── .github/workflows/ci.yml              # GitHub Actions CI & Lectrace Pages deployment (Python 3.14)
 ├── Data/                                 # Raw GDSC2, DepMap & SMILES CSVs (Git-ignored)
 ├── Lectrace/                             # Interactive Execution-Explanation Presentation
 │   ├── _project_data.py                  # Small, reproducible GBM inputs & benchmarks
@@ -44,24 +44,42 @@ gbm_drug_response_project/
 ├── pyproject.toml & requirements.txt     # Package metadata & dependencies
 └── README.md
 ```
+---
+
+## 3. Data Preparation (`Data/`)
+
+Because raw multi-omics matrices and dose-response tables exceed GitHub file size limits, they are excluded via `.gitignore`. To run the full training pipeline from scratch, place the following files inside the `Data/` directory:
+
+| File Name | Source | Description |
+| :--- | :--- | :--- |
+| `GDSC2_fitted_dose_response_27Oct23.csv` | GDSC2 | Fitted dose-response `LN_IC50` records filtered for Glioblastoma (`CANCER_TYPE`) |
+| `Model.csv` | DepMap | Cell-line metadata mapping `SangerModelID` and `CellLineName` to `ModelID` (`ACH-*`) and `OncotreeSubtype` |
+| `OmicsExpressionProteinCodingGenesTPMLogp1BatchCorrected.csv` | DepMap | Batch-corrected $\log_2(\text{TPM}+1)$ protein-coding gene expression ($19,138$ genes) |
+| `OmicsSomaticMutationsMatrixHotspot.csv` | DepMap | Somatic hotspot mutation matrix ($20$ active hotspot genes in GBM cohort) |
+| `CCLE_RRBS_TSS_1kb_20180614.txt` | CCLE / DepMap | Promoter methylation ($\text{TSS } 1\text{kb}$) tab-delimited matrix |
+| `drug_smiles.csv` | PubChem / GDSC | Canonical SMILES strings (`drug_name`, `canonical_smiles`) for RDKit featurization |
+
+> **Note**: 
+**All following csv data files are already included in zip file**
+You can run the complete unit test suite (`pytest -v`) and end-to-end synthetic pipeline validation (`python scripts/06_validate_pipeline.py`) **immediately without downloading any CSV files**.
 
 ---
 
-## 3. Quick Start
+## 4. Quick Start
 
-### 3.1 Environment Setup
+### 4.1 Environment Setup (Python $\ge 3.12$, CI configured on Python $3.14$)
 ```bash
 source .vene/bin/activate        # Windows: .vene\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### 3.2 Run Unit Tests & Synthetic Pipeline Audit (No Raw CSVs Needed)
+### 4.2 Run Unit Tests & Synthetic Pipeline Audit (No Raw CSVs Needed)
 ```bash
 pytest -v
 python scripts/06_validate_pipeline.py
 ```
 
-### 3.3 Run Full Training & Evaluation Pipeline
+### 4.3 Run Full Training & Evaluation Pipeline
 Place raw CSV files (`GDSC2_fitted_dose_response_27Oct23.csv`, `Model.csv`, `OmicsExpressionProteinCodingGenesTPMLogp1BatchCorrected.csv`, `OmicsSomaticMutationsMatrixHotspot.csv`, `CCLE_RRBS_TSS_1kb_20180614.txt`, `drug_smiles.csv`) in `Data/`, then run:
 ```bash
 # Run all stages via unified entry point:
@@ -77,13 +95,13 @@ python scripts/05_error_analysis_and_plots.py
 
 ---
 
-## 4. Execution-Explanation Presentation Using Lectrace (`Lectrace/`)
+## 5. Execution-Explanation Presentation Using Lectrace (`Lectrace/`)
 
 The `Lectrace/` directory contains two files for our 10-minute interactive execution-explanation presentation (configured via `lectrace.toml` at the repository root):
 - `Lectrace/_project_data.py`: Small, reproducible GBM cell-line, drug, and benchmark inputs implementing `__lectrace__()`.
 - `Lectrace/01_gbm_ood_presentation.py`: Main Lectrace script with narrative `text()`, speaker `note()`, `Reference()` code links, `table()`, and Vega-Lite `plot()`.
 
-### 4.1 How to Run Lectrace (Official Lectrace CLI)
+### 5.1 How to Run Lectrace (Official Lectrace CLI, Requires Python $\ge 3.12$ / $3.14$)
 Install Lectrace from PyPI (`pip install lectrace`) and launch the local interactive server from the repository root:
 ```bash
 lectrace serve Lectrace/01_gbm_ood_presentation.py
@@ -93,7 +111,7 @@ To build the static HTML bundle for **GitHub Pages** deployment:
 lectrace build --output _site
 ```
 
-### 4.2 Selected Execution States (10-Minute Walkthrough)
+### 5.2 Selected Execution States (10-Minute Walkthrough)
 
 - **Introduction (Minutes 0:00 – 2:30)**: Introduces GBM clinical resistance to Temozolomide (`MGMT` repair), the danger of shortcut learning on random splits, and our Two-Tower `BaselineMLP` architecture ($5,107$ GBM drug–cell pairs).
 - **Execution State 1 — Leakage-Free OOD Splitting & Train-Only Standardization (`trace_state_1_leakage_free_preprocessing`)**:
@@ -116,26 +134,49 @@ lectrace build --output _site
 
 ---
 
-## 5. Key Experimental Results
+## 6.  Key Experimental Results & Visual Diagnostics
 
-### 5.1 Multi-Split Benchmark Summary ($5$ Random Seeds)
+After deduplication and multi-omics alignment, the final GBM cohort comprises **$5,107$ unique `(drug, cell_line)` pairs** spanning **$24$ GBM/Gliosarcoma cell lines** and **$243$ unique drugs**.
 
-| Split Regime | Cell-Only | Drug-Only | Additive (No Inter.) | Nearest-Drug FP | `BaselineMLP` Global Spearman | `BaselineMLP` Global RMSE | Within-Cell `BaselineMLP` | Within-Cell Drug-Only |
+### 6.1 Quantitative Benchmark Across Evaluation Regimes ($5$ Random Seeds)
+
+| Split Regime | Cell-Only Baseline (Spearman) | Drug-Only Baseline (Spearman) | Additive Baseline (No Interaction) | Nearest-Drug FP Baseline | Two-Tower `BaselineMLP` Global Spearman | Two-Tower `BaselineMLP` Global RMSE | Within-Cell `BaselineMLP` Spearman | Within-Cell Drug-Only Spearman |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Random (In-Dist)** | $0.2107$ | $0.8349$ | $0.8752$ | — | **$0.8744 \pm 0.0051$** | **$1.0346 \pm 0.0211$** | $0.8541 \pm 0.0576$ | $0.8554 \pm 0.0598$ |
-| **Leave-Cell-Out (Bio OOD)** | N/A | $0.8362$ | N/A | — | $0.6947 \pm 0.2979^*$ | $1.3970 \pm 0.6115^*$ | **$0.8460 \pm 0.0608$** | $0.8449 \pm 0.0602$ |
-| **Scaffold (Chem OOD)** | $0.2494$ | N/A | N/A | $0.1445$ | **$0.2905 \pm 0.0045$** | $2.1951 \pm 0.0081$ | $0.1735 \pm 0.0813$ | N/A |
+| **Random (In-Distribution)** | $0.2107$ | $0.8349$ | $0.8752$ | — | **$0.8744 \pm 0.0051$** | **$1.0346 \pm 0.0211$** | $0.8541 \pm 0.0576$ | $0.8554 \pm 0.0598$ |
+| **Leave-Cell-Out (Cell OOD)** | N/A | $0.8362$ | N/A | — | $0.6947 \pm 0.2979^*$ | $1.3970 \pm 0.6115^*$ | **$0.8460 \pm 0.0608$** | $0.8449 \pm 0.0602$ |
+| **Scaffold (Chemical OOD)** | $0.2494$ | N/A ($0\%$ cov) | N/A | $0.1445$ | **$0.2905 \pm 0.0045$** | $2.1951 \pm 0.0081$ | $0.1735 \pm 0.0813$ | N/A |
 
-*\*In Leave-Cell-Out, 4 of 5 seeds converge to Spearman $0.8388\text{–}0.8476$ (mean $0.8436$), while `seed=2` early-stops at epoch 21 ($0.0989$).*
-
-### 5.2 Diagnostic Figures (`Results/`)
-- **Baseline & OOD Comparison**: `Results/diag_spearman_decomposition.png`, `Results/OOD_three_split_comparison.png`
-- **Variance Shrinkage & Bias**: `Results/OOD_scatter_three_splits.png`, `Results/OOD_prediction_bias_box.png`
-- **Global vs. Within-Drug Decoupling**: `Results/OOD_global_vs_within_drug_spearman.png`, `Results/OOD_per_drug_rmse_box.png`
-- **Scaffold Novelty vs. Error**: `Results/OOD_scaffold_novelty_vs_error.png`
+*\*Note on Leave-Cell-Out Multi-Seed Stability*: Four of the five seeds (`seed=0, 1, 3, 4`) converge stably to a global Spearman of **$0.8388\text{–}0.8476$** (RMSE **$1.0823\text{–}1.1034$**), whereas `seed=2` experiences early-stopping collapse at epoch 21 (Spearman $0.0989$, RMSE $2.6199$), automatically flagged by `src/uncertainty.py`.
 
 ---
 
-## 6. License
+### 6.2 Key Scientific Findings & Diagnostic Figures
+
+1. **Leakage-Free Split Distributions**:
+   Train and test `LN_IC50` distributions remain well-aligned across Random, Leave-Cell-Out, and Scaffold splits after strictly fitting `StandardScaler`, `PCA`, and `MGMT` median imputation on training cell lines only.
+   ![Three Split Distributions](Results/three_split.png)
+
+2. **Shortcut Learning & Baseline Decomposition**:
+   On the in-distribution Random split, a non-deep-learning **Additive Baseline** (`drug_mean + cell_mean - global_mean`) achieves Spearman $= 0.8752$, matching the deep `BaselineMLP` ($0.8744$). Within individual cell lines, ranking drugs by their training mean (`Within-Cell Drug-Only` $= 0.8554$) matches the neural network ($0.8541$), demonstrating that apparent in-distribution performance is overwhelmingly driven by between-drug potency variance rather than complex drug–cell interaction learning.
+   ![Baseline Decomposition](Results/diag_spearman_decomposition.png)
+   ![Three Split OOD Comparison](Results/OOD_three_split_comparison.png)
+
+3. **Chemical OOD Collapse & Prediction Variance Shrinkage**:
+   When generalizing to unseen chemical scaffolds (`Scaffold` split), global Spearman drops from $0.8744$ to **$0.2905$** (still outperforming Nearest-Drug Morgan FP similarity at $0.1445$). Variance analysis (`src/uncertainty.py`) reveals severe **prediction shrinkage toward the prior mean**: the ratio $\sigma(\hat{y}) / \sigma(y)$ contracts from **$0.862$** (Random) and **$0.852$** (Leave-Cell-Out) down to **$0.663$** (Scaffold), with $36.8\%$ of test predictions exhibiting $|\text{error}| > 2.0$ log units (e.g., systematically under-predicting `LN_IC50` for **Temozolomide** by $-3.13$ log units and **Irinotecan** by $-3.78$ log units).
+   ![OOD Scatter Three Splits](Results/OOD_scatter_three_splits.png)
+   ![Prediction Bias Boxplot](Results/OOD_prediction_bias_box.png)
+
+4. **Decoupling Between Global Spearman and Within-Drug Spearman**:
+   Crucially, while **global Spearman** collapses on the Scaffold split ($0.292$), the **median within-drug Spearman across cell lines** remains **$0.530$** (compared to $0.500$ on Random and $0.500$ on Leave-Cell-Out). Thus, the cell-line encoder successfully preserves relative cell-line sensitivity ordering *within* a given drug, and the chemical OOD failure is primarily caused by inability to calibrate the **per-drug baseline potency offset** for novel chemical scaffolds.
+   ![Global vs Within-Drug Spearman](Results/OOD_global_vs_within_drug_spearman.png)
+   ![Per-Drug RMSE Boxplot](Results/OOD_per_drug_rmse_box.png)
+
+5. **Chemical Scaffold Novelty vs. Prediction Error**:
+   Evaluating maximum Tanimoto similarity between each held-out test scaffold and all training scaffolds (`max_sim` $\in [0.169, 0.734]$) shows a weak negative trend ($\rho = -0.0987$), with drugs having high structural similarity to training scaffolds (`max_sim > 0.7`) achieving substantially lower median RMSE ($1.253$) than structurally novel scaffolds (`max_sim < 0.3`, median RMSE $= 2.161$).
+   ![Scaffold Novelty vs Error](Results/OOD_scaffold_novelty_vs_error.png)
+
+---
+
+## 7. License
 
 Released under the [MIT License](LICENSE).

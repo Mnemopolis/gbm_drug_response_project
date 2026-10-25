@@ -101,7 +101,7 @@ python scripts/05_error_analysis_and_plots.py
 
 ## 5. Showcase Landing Page (`docs/index.html`) & Lectrace Presentation (`Lectrace/`)
 
-- **Showcase Landing Page (`docs/index.html`)**: Self-contained interactive product showcase deployed from `/docs` at the GitHub Pages root (`https://<username>.github.io/<repo>/`), featuring an interactive split regime explorer, clinical GBM drug inspector, embedded diagnostic figures, and links to `./lectrace/`, the GitHub repository, and reserved UI slots for the 10-minute video and technical report PDF.
+- **Showcase Landing Page (`docs/index.html`)**: Self-contained interactive product showcase deployed from `/docs` at the GitHub Pages root (`https://<username>.github.io/<repo>/`), featuring an interactive split regime explorer, clinical GBM drug inspector, embedded diagnostic figures, and direct links to `./lectrace/`, the GitHub repository, the [10-minute Bilibili presentation video](https://www.bilibili.com/video/BV1VcnS6EEsN), and the NeurIPS technical report PDF (`Latex_report/gbm_neurips_report.pdf`).
 - **Interactive LecTrace Presentation (`Lectrace/`)**:
   - `Lectrace/_project_data.py`: Small, reproducible GBM cell-line, drug, and benchmark inputs implementing `__lectrace__()`.
   - `Lectrace/01_gbm_ood_presentation.py`: Main Lectrace script with narrative `text()`, speaker `note()`, `Reference()` code links, `table()`, and Vega-Lite `plot()`.

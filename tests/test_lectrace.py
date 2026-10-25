@@ -156,6 +156,8 @@ class TestLectraceReadmeShowcaseAndCI(unittest.TestCase):
         html_text = html_path.read_text(encoding="utf-8")
         self.assertIn("<!DOCTYPE html>", html_text)
         self.assertIn("./lectrace/", html_text)
+        self.assertIn("https://www.bilibili.com/video/BV1VcnS6EEsN", html_text)
+        self.assertIn("Latex_report/gbm_neurips_report.pdf", html_text)
         self.assertIn("0.8744", html_text)
         self.assertIn("0.8752", html_text)
         self.assertIn("0.2905", html_text)

@@ -205,17 +205,19 @@
               <button
                 id="hero-video-btn"
                 type="button"
-                class="px-3.5 py-2.5 rounded-lg font-medium text-xs sm:text-sm text-indigo-200 bg-white/5 hover:bg-white/10 border border-indigo-300/20 transition"
+                class="px-3.5 py-2.5 rounded-lg font-medium text-xs sm:text-sm text-indigo-100 bg-white/10 hover:bg-white/15 border border-indigo-300/30 transition flex items-center gap-1.5"
               >
-                10-min video <span id="badge-video-status" class="text-[11px] font-mono opacity-75">(Overview)</span>
+                <span>10-min video</span>
+                <span id="badge-video-status" class="text-[11px] font-mono opacity-85">(Bilibili ↗)</span>
               </button>
 
               <button
                 id="hero-paper-btn"
                 type="button"
-                class="px-3.5 py-2.5 rounded-lg font-medium text-xs sm:text-sm text-indigo-200 bg-white/5 hover:bg-white/10 border border-indigo-300/20 transition"
+                class="px-3.5 py-2.5 rounded-lg font-medium text-xs sm:text-sm text-indigo-100 bg-white/10 hover:bg-white/15 border border-indigo-300/30 transition flex items-center gap-1.5"
               >
-                Project report <span id="badge-paper-status" class="text-[11px] font-mono opacity-75">(Abstract)</span>
+                <span>Project report</span>
+                <span id="badge-paper-status" class="text-[11px] font-mono opacity-85">(PDF ↗)</span>
               </button>
             </div>
           </div>
@@ -1156,25 +1158,25 @@ leakage_audit_passed: True</pre>
                 <button
                   id="hub-video-btn"
                   type="button"
-                  class="w-full p-3 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/40 hover:bg-indigo-100/70 border border-indigo-200/80 dark:border-indigo-800 flex items-center justify-between gap-3 overflow-hidden transition text-left"
+                  class="w-full p-3 rounded-lg bg-indigo-50/80 dark:bg-indigo-900/50 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-700 flex items-center justify-between gap-3 overflow-hidden transition text-left"
                 >
                   <div class="min-w-0 flex-1">
                     <span class="text-xs sm:text-sm font-bold text-indigo-950 dark:text-white block truncate">3. 10-Minute Presentation Video</span>
-                    <span id="hub-video-sub" class="text-[11px] text-slate-500 font-mono block truncate">Chapter Outline &amp; Video Link</span>
+                    <span id="hub-video-sub" class="text-[11px] text-slate-500 font-mono block truncate">bilibili.com/video/BV1VcnS6EEsN · 10-Min Walkthrough</span>
                   </div>
-                  <span class="shrink-0 whitespace-nowrap px-2.5 py-1 rounded text-xs font-semibold bg-violet-100 dark:bg-violet-900 text-violet-800 dark:text-violet-200">View</span>
+                  <span class="shrink-0 whitespace-nowrap px-2.5 py-1 rounded text-xs font-semibold bg-violet-100 dark:bg-violet-900 text-violet-800 dark:text-violet-200">Watch ↗</span>
                 </button>
 
                 <button
                   id="hub-paper-btn"
                   type="button"
-                  class="w-full p-3 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/40 hover:bg-indigo-100/70 border border-indigo-200/80 dark:border-indigo-800 flex items-center justify-between gap-3 overflow-hidden transition text-left"
+                  class="w-full p-3 rounded-lg bg-indigo-50/80 dark:bg-indigo-900/50 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-700 flex items-center justify-between gap-3 overflow-hidden transition text-left"
                 >
                   <div class="min-w-0 flex-1">
                     <span class="text-xs sm:text-sm font-bold text-indigo-950 dark:text-white block truncate">4. Project Technical Report (PDF)</span>
-                    <span id="hub-paper-sub" class="text-[11px] text-slate-500 font-mono block truncate">Executive Abstract &amp; Report PDF</span>
+                    <span id="hub-paper-sub" class="text-[11px] text-slate-500 font-mono block truncate">Latex_report/gbm_neurips_report.pdf · NeurIPS 2019 Format</span>
                   </div>
-                  <span class="shrink-0 whitespace-nowrap px-2.5 py-1 rounded text-xs font-semibold bg-sky-100 dark:bg-sky-900 text-sky-800 dark:text-sky-200">Read</span>
+                  <span class="shrink-0 whitespace-nowrap px-2.5 py-1 rounded text-xs font-semibold bg-sky-100 dark:bg-sky-900 text-sky-800 dark:text-sky-200">PDF ↗</span>
                 </button>
               </div>
             </div>
@@ -1233,21 +1235,22 @@ leakage_audit_passed: True</pre>
     // 1. Project Links Configuration
     //    - `lectraceUrl`: "./lectrace/" works automatically on GitHub Pages
     //    - `githubRepoUrl`: auto-populated by GitHub Actions CI & hostname detection
-    //    - `videoUrl`: paste your recorded 10-min video URL here when ready
-    //    - `reportUrl`: paste "./report.pdf" or external PDF URL here when ready
+    //    - `videoUrl`: Bilibili 10-min LecTrace presentation walkthrough
+    //    - `reportUrl`: "./Latex_report/gbm_neurips_report.pdf" (copied to docs/ by CI)
     // =========================================================================
     const PROJECT_LINKS = {
       lectraceUrl: "./lectrace/",
-      githubRepoUrl: "https://github.com/Mnemopolis/gbm_drug_response_project",
-      videoUrl: "",
-      reportUrl: ""
+      githubRepoUrl: "__GITHUB_REPO_URL__",
+      videoUrl: "https://www.bilibili.com/video/BV1VcnS6EEsN",
+      reportUrl: "./Latex_report/gbm_neurips_report.pdf",
+      reportRepoRelativePath: "Latex_report/gbm_neurips_report.pdf"
     };
 
     function resolveGitHubRepoUrl() {
       if (
         PROJECT_LINKS.githubRepoUrl &&
         PROJECT_LINKS.githubRepoUrl.trim() !== "" &&
-        !PROJECT_LINKS.githubRepoUrl.includes("https://github.com/Mnemopolis/gbm_drug_response_project")
+        !PROJECT_LINKS.githubRepoUrl.includes("__GITHUB_REPO_URL__")
       ) {
         return PROJECT_LINKS.githubRepoUrl.trim();
       }
@@ -1570,9 +1573,26 @@ scaffold_large_error_fraction: "36.8%"`,
       );
     }
 
+    function resolveReportPdfUrl() {
+      const host = window.location.hostname || "";
+      const protocol = window.location.protocol || "";
+      if (protocol === "file:") {
+        return "../Latex_report/gbm_neurips_report.pdf";
+      }
+      if (host.endsWith(".github.io") || host === "localhost" || host === "127.0.0.1") {
+        return PROJECT_LINKS.reportUrl;
+      }
+      const repoUrl = resolveGitHubRepoUrl();
+      if (repoUrl && repoUrl !== "https://github.com/") {
+        return repoUrl.replace(/\/+$/, "") + "/blob/main/" + PROJECT_LINKS.reportRepoRelativePath;
+      }
+      return PROJECT_LINKS.reportUrl;
+    }
+
     function handleOpenPaper() {
-      if (PROJECT_LINKS.reportUrl && PROJECT_LINKS.reportUrl.trim() !== "") {
-        window.open(PROJECT_LINKS.reportUrl.trim(), "_blank", "noopener,noreferrer");
+      const targetPdfUrl = resolveReportPdfUrl();
+      if (targetPdfUrl && targetPdfUrl.trim() !== "") {
+        window.open(targetPdfUrl.trim(), "_blank", "noopener,noreferrer");
         return;
       }
       openModal(

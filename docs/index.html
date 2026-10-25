@@ -1238,7 +1238,7 @@ leakage_audit_passed: True</pre>
     // =========================================================================
     const PROJECT_LINKS = {
       lectraceUrl: "./lectrace/",
-      githubRepoUrl: "__GITHUB_REPO_URL__",
+      githubRepoUrl: "https://github.com/Mnemopolis/gbm_drug_response_project",
       videoUrl: "",
       reportUrl: ""
     };
@@ -1247,7 +1247,7 @@ leakage_audit_passed: True</pre>
       if (
         PROJECT_LINKS.githubRepoUrl &&
         PROJECT_LINKS.githubRepoUrl.trim() !== "" &&
-        !PROJECT_LINKS.githubRepoUrl.includes("__GITHUB_REPO_URL__")
+        !PROJECT_LINKS.githubRepoUrl.includes("https://github.com/Mnemopolis/gbm_drug_response_project")
       ) {
         return PROJECT_LINKS.githubRepoUrl.trim();
       }

@@ -421,7 +421,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100 dark:border-indigo-900/60 pb-4">
             <div>
               <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">Architecture</span>
-              <h3 class="text-lg sm:text-xl font-bold mt-0.5 text-indigo-950 dark:text-white">Two-Tower BaselineMLP — Late-Fusion Multimodal Network</h3>
+              <h3 class="text-lg sm:text-xl font-bold mt-0.5 text-indigo-950 dark:text-white">Two-Tower BaselineMLP — Joint (Intermediate) Fusion Multimodal Network</h3>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-xs font-mono px-2.5 py-1 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200">src/mlp_model.py</span>
@@ -459,7 +459,7 @@
 
               <!-- Fusion Concat -->
               <rect x="516" y="85" width="164" height="76" rx="10" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
-              <text x="598" y="114" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#155e75">Late Fusion</text>
+              <text x="598" y="114" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#155e75">Joint Fusion (Type I)</text>
               <text x="598" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12.5" font-weight="600" fill="#0e7490">Concat (512-D)</text>
               <text x="598" y="151" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#0891b2">[h_drug || h_cell]</text>
 
@@ -481,6 +481,32 @@
               <text x="932" y="119" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700" fill="#312e81">ŷ</text>
               <text x="932" y="136" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="600" fill="#4f46e5">LN_IC50</text>
             </svg>
+          </div>
+
+          <!-- MD6329 Course Lecture Foundations (Lectures 02, 05, 06, 08, 10) -->
+          <div class="mt-5 pt-5 border-t border-indigo-100 dark:border-indigo-900/60 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+            <div class="p-4 rounded-lg bg-indigo-50/60 dark:bg-indigo-950/50 border border-indigo-200/70 dark:border-indigo-800/70">
+              <span class="font-mono text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-300 block">
+                MD6329 Lecture 02 (Slides 73–81, 107, 123–124) &amp; Lectures 05–06
+              </span>
+              <p class="font-bold text-indigo-950 dark:text-white mt-1">
+                What Counts as an Independent Data Example &amp; Leakage-Free Scaling
+              </p>
+              <p class="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed text-xs">
+                As emphasized in Lecture 02 (<em>Slides 107, 123–124</em>), correlated measurements from the same biological entity (e.g., 200 slices from 1 patient CT volume) are not independent examples. Because our 5,107 assays span only 24 GBM cell lines and 243 drugs, naive random splitting leaks drug and cell identities—motivating our entity-disjoint <strong>Leave-Cell-Out</strong> and <strong>Murcko Scaffold</strong> splits, with <code class="font-mono">StandardScaler</code>, <code class="font-mono">PCA</code>, and <code class="font-mono">MGMT</code> median imputation fitted strictly on training cells (<em>Lecture 02, Slides 73–81; Lecture 05, Slide 79; Lecture 06, Slides 15–20</em>).
+              </p>
+            </div>
+            <div class="p-4 rounded-lg bg-violet-50/60 dark:bg-violet-950/40 border border-violet-200/70 dark:border-violet-800/70">
+              <span class="font-mono text-[11px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-300 block">
+                MD6329 Lecture 08 (Slides 3, 9–17, 29–33) &amp; Lecture 10 (Slides 8, 14–15)
+              </span>
+              <p class="font-bold text-indigo-950 dark:text-white mt-1">
+                Heterogeneous Modalities &amp; Joint (Intermediate) Fusion — Type I
+              </p>
+              <p class="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed text-xs">
+                Following the multimodal fusion taxonomy in Lecture 08 (<em>Huang et al., 2020; Slides 29–33</em>), raw input concatenation (<em>Early Fusion, Slide 31</em>) lets the 2048-D Morgan fingerprint overwhelm the 44-D cell omics vector (reduced from 19,138 genes via train-only PCA per <em>Lecture 10, Slides 8, 14–15</em>). Our Two-Tower <code class="font-mono">BaselineMLP</code> implements <strong>Joint Fusion — Type I (Slide 32)</strong>: modality-specific encoders map drug and cell inputs into balanced 256-D representations before concatenation (<code class="font-mono">512-D</code>) and end-to-end backpropagation.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1082,6 +1108,15 @@ leakage_audit_passed: True</pre>
                 </li>
               </ul>
             </div>
+            <div class="mt-5 pt-4 border-t border-indigo-100 dark:border-indigo-900/60 space-y-2 text-xs text-slate-600 dark:text-slate-300">
+              <p>
+                <strong class="text-indigo-950 dark:text-white">MD6329 Lecture 11 Alignment (Slides 40–42 &amp; 52–54):</strong>
+                Grounds our OOD robustness audit (<em>Nestor et al., 2019; Slide 41</em>) and <em>Model Cards for Model Reporting</em> (<em>Mitchell et al., 2019; Slides 52–54</em>) separating intended clinical biomarker stratification from out-of-scope dosing.
+              </p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                <strong>Author &amp; Acknowledgments:</strong> M.Sc. in AI in Medicine, Lee Kong Chian School of Medicine (LKCMedicine), NTU Singapore. We thank Prof. Chee Wei Tan and the invited guest lecturers of MD6329, Mr. Adesanmi Dayo Praisegod for the open-source LecTrace framework, and Generative AI tools DeepSeek (ideation, concept development &amp; architecture) and Gemini (code, frontend design &amp; report writing).
+              </p>
+            </div>
           </div>
 
           <!-- Project Deliverables Hub -->
@@ -1421,7 +1456,7 @@ drug_emb_4d: [0.7, 0.35, 0.28, 1.42]
 u87_mgmt_low_pred_ic50: 5.663  (MGMT_Expr = 0.42)
 t98g_mgmt_high_pred_ic50: 6.921 (MGMT_Expr = 5.84)
 mgmt_resistance_shift_ln_ic50: +1.258`,
-        why: "Demonstrates how late concatenation of Drug Tower and Cell Tower embeddings captures MGMT-mediated Temozolomide resistance (+1.258 log units higher predicted IC50 in MGMT-high T98G vs. MGMT-low U-87 MG)."
+        why: "Demonstrates how Joint (Intermediate) Fusion of Drug Tower and Cell Tower embeddings captures MGMT-mediated Temozolomide resistance (+1.258 log units higher predicted IC50 in MGMT-high T98G vs. MGMT-low U-87 MG)."
       },
       state3: {
         filename: "Lectrace/01_gbm_ood_presentation.py — Execution State 3",

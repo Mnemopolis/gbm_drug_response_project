@@ -90,11 +90,11 @@ Place raw CSV files (`GDSC2_fitted_dose_response_27Oct23.csv`, `Model.csv`, `Omi
 python main.py --stage all --device auto
 
 # Or run stage-by-stage:
-python scripts/01_preprocess_and_split.py
-python scripts/02_evaluate_baselines.py
-python scripts/03_train_ood_models.py --seeds 5 --epochs 100 --device auto
-python scripts/04_uncertainty_and_shrinkage.py
-python scripts/05_error_analysis_and_plots.py
+python main.py --stage data
+python main.py --stage baselines
+python main.py --stage train --seeds 5 --epochs 100 --device auto
+python main.py --stage uncertainty
+python main.py --stage analyze
 ```
 
 ---

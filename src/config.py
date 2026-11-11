@@ -1,6 +1,6 @@
 """
 Centralized configuration for directory paths, raw data files, hyperparameters,
-and Glioblastoma (GBM) pharmacological constants.
+plotting palettes, and Glioblastoma (GBM) pharmacological constants.
 """
 
 from pathlib import Path
@@ -25,8 +25,15 @@ METHYL_TXT_FILE: Path = DATA_DIR / "CCLE_RRBS_TSS_1kb_20180614.txt"
 METHYL_CSV_FILE: Path = DATA_DIR / "CCLE_RRBS_Methylation.csv"
 SMILES_FILE: Path = DATA_DIR / "drug_smiles.csv"
 
-# 3. Cached Splits & Model Artifact Paths
+# 3. Cached Splits, Visual Palettes & Model Artifact Paths
 SPLIT_NAMES: list[str] = ["random", "leave_cell", "scaffold"]
+SPLIT_COLORS: list[str] = ["#1976d2", "#f57c00", "#d32f2f"]
+SPLIT_DISPLAY_TITLES: dict[str, str] = {
+    "random": "Random (in-distribution)",
+    "leave_cell": "Leave-Cell-Out (cell OOD)",
+    "scaffold": "Scaffold (chemical OOD)",
+}
+
 BEST_RANDOM_MODEL_PATH: Path = MODELS_DIR / "best_fp_random.pt"
 OOD_RESULTS_PKL: Path = MODELS_DIR / "OOD_results.pkl"
 OOD_PREDS_PKL: Path = MODELS_DIR / "OOD_preds.pkl"
@@ -54,7 +61,7 @@ MORGAN_RADIUS: int = 2
 MORGAN_FP_SIZE: int = 2048
 
 HIDDEN_DIM: int = 256
-DROPOUT_RATE: int | float = 0.30
+DROPOUT_RATE: float = 0.30
 BATCH_SIZE: int = 64
 LEARNING_RATE: float = 1e-4
 WEIGHT_DECAY: float = 1e-4

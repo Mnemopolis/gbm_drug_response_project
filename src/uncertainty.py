@@ -1,26 +1,20 @@
 """
 Multi-Seed Uncertainty, Training Instability, and Prediction Variance Shrinkage Module.
-
-Single Responsibility Principle (SRP):
-Quantifies initialization sensitivity across random seeds (e.g., diagnosing the
-Seed 2 early-stopping collapse on Leave-Cell-Out in Notebook 03 Cells 7-8) and
-prediction variance shrinkage toward the training mean (Notebook 04 Cell 8).
 """
+
+from __future__ import annotations
 
 from typing import Any
 
 import numpy as np
 import pandas as pd
-from scipy.stats import spearmanr
 
+from src.baselines import safe_spearman
 from src.config import SPLIT_NAMES
 
 
 def summarize_seed_stability_across_splits(results: dict[str, Any]) -> pd.DataFrame:
-    """
-    Summarize multi-seed Spearman and RMSE mean, standard deviation, min, max,
-    and instability flag across splits.
-    """
+    """Summarize multi-seed Spearman and RMSE mean, std, min, max, and collapse flag across splits."""
     rows: list[dict[str, Any]] = []
     for split in SPLIT_NAMES:
         if split not in results:
@@ -56,33 +50,23 @@ def compare_cell_performance_between_seeds(
     seed_a_label: str = "seed_0",
     seed_b_label: str = "seed_2",
 ) -> pd.DataFrame:
-    """
-    Compare per-cell-line Spearman correlation, RMSE, and mean predicted LN_IC50
-    between two random seeds (e.g., normal Seed 0 vs. collapsed Seed 2 on Leave-Cell-Out).
-    """
+    """Compare per-cell-line Spearman and RMSE between two random seeds (e.g., Seed 0 vs Seed 2)."""
     df = pd.DataFrame(
-        {
-            "cell": cell_ids,
-            "true": trues,
-            "pred_a": preds_seed_a,
-            "pred_b": preds_seed_b,
-        }
+        {"ModelID": cell_ids, "true": trues, "pred_a": preds_seed_a, "pred_b": preds_seed_b}
     )
     records: list[dict[str, Any]] = []
-    for cell_id, group in df.groupby("cell"):
-        sp_a = float(spearmanr(group["pred_a"], group["true"]).correlation)
-        sp_b = float(spearmanr(group["pred_b"], group["true"]).correlation)
-        rmse_a = float(np.sqrt(np.mean((group["pred_a"] - group["true"]) ** 2)))
-        rmse_b = float(np.sqrt(np.mean((group["pred_b"] - group["true"]) ** 2)))
+    for cell_id, group in df.groupby("ModelID"):
+        sp_a = safe_spearman(group["pred_a"], group["true"])
+        sp_b = safe_spearman(group["pred_b"], group["true"])
         records.append(
             {
                 "ModelID": cell_id,
                 "n_drugs": len(group),
                 "true_mean": float(group["true"].mean()),
                 f"{seed_a_label}_spearman": sp_a,
-                f"{seed_a_label}_rmse": rmse_a,
+                f"{seed_a_label}_rmse": float(np.sqrt(np.mean((group["pred_a"] - group["true"]) ** 2))),
                 f"{seed_b_label}_spearman": sp_b,
-                f"{seed_b_label}_rmse": rmse_b,
+                f"{seed_b_label}_rmse": float(np.sqrt(np.mean((group["pred_b"] - group["true"]) ** 2))),
                 "spearman_drop": sp_a - sp_b,
             }
         )
@@ -92,20 +76,16 @@ def compare_cell_performance_between_seeds(
 def summarize_prediction_shrinkage_and_bias(
     preds_store: dict[str, Any],
 ) -> pd.DataFrame:
-    """
-    Quantify prediction variance shrinkage toward the training mean (`pred_std / true_std`)
-    and systematic signed bias (`pred - true`) across splits.
-    """
+    """Quantify prediction variance shrinkage (`pred_std / true_std`) and signed bias across splits."""
     rows = []
     for split in SPLIT_NAMES:
         if split not in preds_store:
             continue
         p = preds_store[split]
-        preds = np.asarray(p["preds"])
-        trues = np.asarray(p["trues"])
+        preds = np.asarray(p["preds"], dtype=np.float64)
+        trues = np.asarray(p["trues"], dtype=np.float64)
         err = preds - trues
-        pred_std = float(np.std(preds))
-        true_std = float(np.std(trues))
+        pred_std, true_std = float(np.std(preds)), float(np.std(trues))
         rows.append(
             {
                 "split": split,

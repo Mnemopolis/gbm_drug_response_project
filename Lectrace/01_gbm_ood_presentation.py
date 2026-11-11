@@ -3,11 +3,11 @@
 Run locally via the official Lectrace CLI:
     lectrace serve Lectrace/01_gbm_ood_presentation.py
 """
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional
+
 import math
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 
 _LECTRACE_DIR = (
     Path(__file__).resolve().parent
@@ -20,17 +20,18 @@ if str(_LECTRACE_DIR) not in sys.path:
 try:
     from lectrace import Reference, link, note, plot, text
 except ImportError:  # Lightweight stub matching official Lectrace API signatures
+
     @dataclass(frozen=True)
     class Reference:
-        title: Optional[str] = None
-        authors: Optional[list[str]] = None
-        organization: Optional[str] = None
-        date: Optional[str] = None
-        url: Optional[str] = None
-        description: Optional[str] = None
-        notes: Optional[str] = None
+        title: str | None = None
+        authors: list[str] | None = None
+        organization: str | None = None
+        date: str | None = None
+        url: str | None = None
+        description: str | None = None
+        notes: str | None = None
 
-    def text(message: str, verbatim: bool = False, style: Optional[dict] = None) -> None:
+    def text(message: str, verbatim: bool = False, style: dict | None = None) -> None:
         return None
 
     def note(message: str) -> None:
@@ -53,18 +54,24 @@ except ImportError:  # Lightweight stub matching official Lectrace API signature
     ) -> None:
         return None
 
+
 try:
     from lectrace import table
 except ImportError:
+
     def table(rows, headers=None, caption=None, style=None) -> None:
         """Fallback Markdown table renderer via `text()` if `lectrace.table` is absent."""
         if not rows:
-            return None
+            return
         if isinstance(rows[0], dict):
             cols = list(headers) if headers else list(rows[0].keys())
             body_rows = [[r.get(c, "—") for c in cols] for r in rows]
         else:
-            cols = list(headers) if headers else [f"Col {i + 1}" for i in range(len(rows[0]))]
+            cols = (
+                list(headers)
+                if headers
+                else [f"Col {i + 1}" for i in range(len(rows[0]))]
+            )
             body_rows = rows
         lines = []
         if caption:
@@ -72,13 +79,15 @@ except ImportError:
         lines.append("| " + " | ".join(str(c) for c in cols) + " |")
         lines.append("| " + " | ".join("---" for _ in cols) + " |")
         for r in body_rows:
-            lines.append("| " + " | ".join("—" if v is None else str(v) for v in r) + " |")
+            lines.append(
+                "| " + " | ".join("—" if v is None else str(v) for v in r) + " |"
+            )
         text("\n".join(lines))
-        return None
+        return
+
 
 from _project_data import (
     BENCHMARK_RESULTS,
-    COHORT_SUMMARY,
     DEMO_MLP_WEIGHTS,
     SAMPLE_CELL_LINES,
     SAMPLE_DRUGS,
@@ -120,7 +129,6 @@ def main():
         description="DepMap multi-omics resource (RNA-seq TPM, hotspot mutations, methylation).",
     )
 
-    cohort_meta = COHORT_SUMMARY  # @inspect cohort_meta
     text(r"""
         ### 2. Multimodal Cohort & Two-Tower Architecture
         - **Aligned Cohort**: $5,107$ deduplicated `(drug, cell_line)` pairs across **$24$ GBM cell lines** and **$243$ drugs**.
@@ -146,7 +154,9 @@ def main():
         Verify in the Variable Panel that `leakage_audit_passed` is True.
     """)
 
-    state_1_state = trace_state_1_leakage_free_preprocessing(SAMPLE_CELL_LINES, SAMPLE_DRUGS)  # @inspect state_1_state
+    trace_state_1_leakage_free_preprocessing(
+        SAMPLE_CELL_LINES, SAMPLE_DRUGS
+    )  # @inspect state_1_state
 
     # -------------------------------------------------------------------------
     # Execution State 2 (Minutes 4:30 - 6:15): Two-Tower MLP Forward Pass
@@ -163,14 +173,16 @@ def main():
         Compare `u87_mgmt_low_pred_ic50` vs `t98g_mgmt_high_pred_ic50` in the Variable Panel.
     """)
 
-    tmz_drug = SAMPLE_DRUGS[0]          # @inspect tmz_drug
-    u87_cell = SAMPLE_CELL_LINES[0]     # @inspect u87_cell
-    t98g_cell = SAMPLE_CELL_LINES[1]    # @inspect t98g_cell
+    tmz_drug = SAMPLE_DRUGS[0]  # @inspect tmz_drug
+    u87_cell = SAMPLE_CELL_LINES[0]  # @inspect u87_cell
+    t98g_cell = SAMPLE_CELL_LINES[1]  # @inspect t98g_cell
 
-    state_2_forward = trace_state_2_two_tower_forward_pass(tmz_drug, u87_cell, t98g_cell, DEMO_MLP_WEIGHTS)  # @inspect state_2_forward
-    tmz_drug                            # @clear tmz_drug
-    u87_cell                            # @clear u87_cell
-    t98g_cell                           # @clear t98g_cell
+    trace_state_2_two_tower_forward_pass(
+        tmz_drug, u87_cell, t98g_cell, DEMO_MLP_WEIGHTS
+    )  # @inspect state_2_forward
+    tmz_drug  # @clear tmz_drug
+    u87_cell  # @clear u87_cell
+    t98g_cell  # @clear t98g_cell
 
     # -------------------------------------------------------------------------
     # Execution State 3 (Minutes 6:15 - 7:45): Shortcut Learning Diagnosis
@@ -187,38 +199,10 @@ def main():
         Highlight `interaction_gain_global` (-0.0008) in the Variable Panel.
     """)
 
-    state_3_shortcut = trace_state_3_shortcut_decomposition(BENCHMARK_RESULTS)  # @inspect state_3_shortcut
+    trace_state_3_shortcut_decomposition(BENCHMARK_RESULTS)  # @inspect state_3_shortcut
 
     table(
-        [
-            {
-                "Split Regime": "Random (In-Dist)",
-                "Cell-Only": 0.2107,
-                "Drug-Only": 0.8349,
-                "Additive (No Inter.)": 0.8752,
-                "BaselineMLP Global": "0.8744 ± 0.0051",
-                "Within-Cell MLP": "0.8541 ± 0.0576",
-                "Within-Cell Drug-Only": "0.8554 ± 0.0598",
-            },
-            {
-                "Split Regime": "Leave-Cell-Out (Bio OOD)",
-                "Cell-Only": None,
-                "Drug-Only": 0.8362,
-                "Additive (No Inter.)": None,
-                "BaselineMLP Global": "0.6947 ± 0.2979*",
-                "Within-Cell MLP": "0.8460 ± 0.0608",
-                "Within-Cell Drug-Only": "0.8449 ± 0.0602",
-            },
-            {
-                "Split Regime": "Scaffold (Chem OOD)",
-                "Cell-Only": 0.2494,
-                "Drug-Only": None,
-                "Additive (No Inter.)": None,
-                "BaselineMLP Global": "0.2905 ± 0.0045",
-                "Within-Cell MLP": "0.1735 ± 0.0813",
-                "Within-Cell Drug-Only": None,
-            },
-        ],
+        build_benchmark_table_rows(BENCHMARK_RESULTS),
         caption="Table 1: Multi-Split Spearman Benchmark Across 5 Random Seeds (5,107 GBM Pairs)",
     )
 
@@ -239,9 +223,11 @@ def main():
         Contrast `global_spearman` (0.2905) with `within_drug_median_spearman` (0.530) on Scaffold OOD.
     """)
 
-    state_4_ood = trace_state_4_ood_shrinkage_and_decoupling(BENCHMARK_RESULTS, SAMPLE_DRUGS)  # @inspect state_4_ood
+    trace_state_4_ood_shrinkage_and_decoupling(
+        BENCHMARK_RESULTS, SAMPLE_DRUGS
+    )  # @inspect state_4_ood
 
-    plot(build_ood_comparison_chart_spec())
+    plot(build_ood_comparison_chart_spec(BENCHMARK_RESULTS))
     table(
         SCAFFOLD_NOVELTY_BINS,
         caption="Table 2: Chemical Scaffold Novelty (Max Tanimoto Similarity to Train) vs. Per-Drug RMSE",
@@ -266,8 +252,12 @@ def trace_state_1_leakage_free_preprocessing(cell_lines, drugs):
     train_cells = [c.cell_line_name for c in cell_lines[:2]]
     heldout_test_cells = [c.cell_line_name for c in cell_lines[2:]]
 
-    train_scaffolds = [d.murcko_scaffold for d in drugs if d.split_assignment == "train_scaffold"]
-    heldout_test_scaffolds = [d.murcko_scaffold for d in drugs if d.split_assignment == "test_scaffold"]
+    train_scaffolds = [
+        d.murcko_scaffold for d in drugs if d.split_assignment == "train_scaffold"
+    ]
+    heldout_test_scaffolds = [
+        d.murcko_scaffold for d in drugs if d.split_assignment == "test_scaffold"
+    ]
 
     cell_overlap = len(set(train_cells) & set(heldout_test_cells))
     scaffold_overlap = len(set(train_scaffolds) & set(heldout_test_scaffolds))
@@ -275,7 +265,10 @@ def trace_state_1_leakage_free_preprocessing(cell_lines, drugs):
     train_gene0_vals = [c.raw_expr_vector[0] for c in cell_lines[:2]]
     gene0_train_mean = round(sum(train_gene0_vals) / len(train_gene0_vals), 4)
     gene0_train_std = round(
-        math.sqrt(sum((v - gene0_train_mean) ** 2 for v in train_gene0_vals) / len(train_gene0_vals)),
+        math.sqrt(
+            sum((v - gene0_train_mean) ** 2 for v in train_gene0_vals)
+            / len(train_gene0_vals)
+        ),
         4,
     )
 
@@ -286,7 +279,9 @@ def trace_state_1_leakage_free_preprocessing(cell_lines, drugs):
     return {
         "train_cells": train_cells,
         "heldout_test_cells": heldout_test_cells,
-        "heldout_test_drugs": [d.drug_name for d in drugs if d.split_assignment == "test_scaffold"],
+        "heldout_test_drugs": [
+            d.drug_name for d in drugs if d.split_assignment == "test_scaffold"
+        ],
         "gene0_train_mean": gene0_train_mean,
         "gamg_z_gene0_standardized": gamg_z_gene0,
         "leakage_audit_passed": leakage_audit_passed,
@@ -304,13 +299,25 @@ def _linear_relu(x_vec, weight_matrix, bias_vec):
 def trace_state_2_two_tower_forward_pass(drug, sensitive_cell, resistant_cell, weights):
     """State 2: Step through Drug Tower, Cell Tower, Concatenation, and IC50 De-standardization."""
     drug_fp = drug.morgan_fp_8d
-    drug_emb = _linear_relu(drug_fp, weights["W_drug_1"], weights["b_drug_1"])  # @stepover
+    drug_emb = _linear_relu(
+        drug_fp, weights["W_drug_1"], weights["b_drug_1"]
+    )  # @stepover
 
-    u87_feat = sensitive_cell.pca_omics_vector + [sensitive_cell.mutations["PTEN"], sensitive_cell.mgmt_expr]
-    t98g_feat = resistant_cell.pca_omics_vector + [resistant_cell.mutations["PTEN"], resistant_cell.mgmt_expr]
+    u87_feat = sensitive_cell.pca_omics_vector + [
+        sensitive_cell.mutations["PTEN"],
+        sensitive_cell.mgmt_expr,
+    ]
+    t98g_feat = resistant_cell.pca_omics_vector + [
+        resistant_cell.mutations["PTEN"],
+        resistant_cell.mgmt_expr,
+    ]
 
-    u87_cell_emb = _linear_relu(u87_feat, weights["W_cell_1"], weights["b_cell_1"])    # @stepover
-    t98g_cell_emb = _linear_relu(t98g_feat, weights["W_cell_1"], weights["b_cell_1"])  # @stepover
+    u87_cell_emb = _linear_relu(
+        u87_feat, weights["W_cell_1"], weights["b_cell_1"]
+    )  # @stepover
+    t98g_cell_emb = _linear_relu(
+        t98g_feat, weights["W_cell_1"], weights["b_cell_1"]
+    )  # @stepover
 
     joint_u87 = drug_emb + u87_cell_emb
     joint_t98g = drug_emb + t98g_cell_emb
@@ -343,7 +350,9 @@ def trace_state_3_shortcut_decomposition(benchmarks):
 
     interaction_gain_global = round(sp_mlp_global - sp_additive, 4)
     interaction_gain_within_cell = round(
-        rand["mlp_within_cell_spearman_mean"] - rand["drug_only_within_cell_spearman_mean"], 4
+        rand["mlp_within_cell_spearman_mean"]
+        - rand["drug_only_within_cell_spearman_mean"],
+        4,
     )
     drug_potency_variance_share = round((sp_drug_only / sp_mlp_global) * 100.0, 1)
 
@@ -400,30 +409,77 @@ def trace_state_4_ood_shrinkage_and_decoupling(benchmarks, drugs):
     }
 
 
-def build_ood_comparison_chart_spec():
-    """Interactive Vega-Lite grouped bar chart comparing Global vs. Within-Drug Spearman."""
+def build_benchmark_table_rows(benchmarks=BENCHMARK_RESULTS):
+    """Derive Table 1 rows directly from `BENCHMARK_RESULTS` (single source of truth)."""
+    rows = []
+    for key in ("random", "leave_cell", "scaffold"):
+        b = benchmarks[key]
+        star = "*" if key == "leave_cell" else ""
+        wc_do = (
+            f"{b['drug_only_within_cell_spearman_mean']:.4f} ± {b['drug_only_within_cell_spearman_std']:.4f}"
+            if b["drug_only_within_cell_spearman_mean"] is not None
+            else None
+        )
+        rows.append(
+            {
+                "Split Regime": b["split_label"],
+                "Cell-Only": b["cell_only_spearman"],
+                "Drug-Only": b["drug_only_spearman"],
+                "Additive (No Inter.)": b["additive_spearman"],
+                "BaselineMLP Global": f"{b['mlp_global_spearman_mean']:.4f} ± {b['mlp_global_spearman_std']:.4f}{star}",
+                "Within-Cell MLP": f"{b['mlp_within_cell_spearman_mean']:.4f} ± {b['mlp_within_cell_spearman_std']:.4f}",
+                "Within-Cell Drug-Only": wc_do,
+            }
+        )
+    return rows
+
+
+def build_ood_comparison_chart_spec(benchmarks=BENCHMARK_RESULTS):
+    """Interactive Vega-Lite grouped bar chart derived dynamically from `BENCHMARK_RESULTS`."""
+    split_labels = [
+        ("random", "1. Random (In-Dist)"),
+        ("leave_cell", "2. Leave-Cell (Bio OOD)"),
+        ("scaffold", "3. Scaffold (Chem OOD)"),
+    ]
+    values = []
+    for key, label in split_labels:
+        b = benchmarks[key]
+        mlp_sp = b.get("mlp_stable_seeds_spearman_mean", b["mlp_global_spearman_mean"])
+        values.extend(
+            [
+                {
+                    "Split": label,
+                    "Metric": "Drug-Only Baseline",
+                    "Spearman": b["drug_only_spearman"] or 0.0,
+                },
+                {"Split": label, "Metric": "MLP Global Spearman", "Spearman": mlp_sp},
+                {
+                    "Split": label,
+                    "Metric": "MLP Within-Drug Median",
+                    "Spearman": b["per_drug_median_spearman"],
+                },
+            ]
+        )
     return {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
         "title": "Global Collapse vs. Within-Drug Ranking Preservation Across OOD Splits",
         "width": 460,
         "height": 260,
-        "data": {
-            "values": [
-                {"Split": "1. Random (In-Dist)", "Metric": "Drug-Only Baseline", "Spearman": 0.8349},
-                {"Split": "1. Random (In-Dist)", "Metric": "MLP Global Spearman", "Spearman": 0.8744},
-                {"Split": "1. Random (In-Dist)", "Metric": "MLP Within-Drug Median", "Spearman": 0.5000},
-                {"Split": "2. Leave-Cell (Bio OOD)", "Metric": "Drug-Only Baseline", "Spearman": 0.8362},
-                {"Split": "2. Leave-Cell (Bio OOD)", "Metric": "MLP Global Spearman", "Spearman": 0.8436},
-                {"Split": "2. Leave-Cell (Bio OOD)", "Metric": "MLP Within-Drug Median", "Spearman": 0.5000},
-                {"Split": "3. Scaffold (Chem OOD)", "Metric": "Drug-Only Baseline", "Spearman": 0.0000},
-                {"Split": "3. Scaffold (Chem OOD)", "Metric": "MLP Global Spearman", "Spearman": 0.2905},
-                {"Split": "3. Scaffold (Chem OOD)", "Metric": "MLP Within-Drug Median", "Spearman": 0.5300},
-            ]
-        },
+        "data": {"values": values},
         "mark": {"type": "bar", "cornerRadiusTopLeft": 3, "cornerRadiusTopRight": 3},
         "encoding": {
-            "x": {"field": "Split", "type": "nominal", "title": "Evaluation Split Regime", "axis": {"labelAngle": 0}},
-            "y": {"field": "Spearman", "type": "quantitative", "title": "Spearman Rank Correlation", "scale": {"domain": [0, 1.0]}},
+            "x": {
+                "field": "Split",
+                "type": "nominal",
+                "title": "Evaluation Split Regime",
+                "axis": {"labelAngle": 0},
+            },
+            "y": {
+                "field": "Spearman",
+                "type": "quantitative",
+                "title": "Spearman Rank Correlation",
+                "scale": {"domain": [0, 1.0]},
+            },
             "xOffset": {"field": "Metric"},
             "color": {
                 "field": "Metric",

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gbm-drug-response"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deep Learning in Healthcare AI: Glioblastoma Drug Sensitivity Prediction & OOD Generalization"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -20,6 +20,9 @@ dependencies = [
     "lectrace>=0.1.0",
 ]
 
+[project.scripts]
+gbm-pipeline = "main:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
@@ -29,6 +32,7 @@ dev = [
 
 [tool.setuptools]
 packages = ["src"]
+py-modules = ["main"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -4,9 +4,17 @@ splitting, standardization, pipeline auditing, baselines, uncertainty, and error
 """
 
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 import numpy as np
 import pandas as pd
+
+from src.baselines import (
+    evaluate_all_statistical_baselines,
+    evaluate_nearest_drug_scaffold_baseline,
+)
+from src.config import SPLIT_NAMES
+from src.splitting import partition_dataframe_by_split
+from src.standardization import fit_transform_cell_pca_features
 
 
 def make_synthetic_merged_dataframe(
@@ -48,6 +56,63 @@ def make_synthetic_merged_dataframe(
     if return_cols:
         return df, expr_cols, mut_cols, mgmt_cols
     return df
+
+
+def make_synthetic_pca_splits(
+    n_cells: int = 8,
+    n_drugs: int = 10,
+    n_pca: int = 4,
+    seed: int = 42,
+) -> Dict[str, Any]:
+    """
+    Build pre-split, train-only PCA-standardized synthetic splits, mock predictions,
+    and mock benchmark results across all three evaluation regimes (`random`, `leave_cell`, `scaffold`).
+    """
+    raw_df, expr_cols, mut_cols, mgmt_cols = make_synthetic_merged_dataframe(
+        n_cells=n_cells, n_drugs=n_drugs, seed=seed, return_cols=True
+    )
+    splits_dict: Dict[str, Tuple[pd.DataFrame, pd.DataFrame]] = {}
+    preds_store: Dict[str, Dict[str, Any]] = {}
+    results_mock: Dict[str, Dict[str, Any]] = {}
+    rng = np.random.default_rng(seed)
+
+    for split in SPLIT_NAMES:
+        tr_raw, te_raw = partition_dataframe_by_split(raw_df, split, test_size=0.25, seed=seed)
+        tr_pca, te_pca = fit_transform_cell_pca_features(
+            tr_raw, te_raw, expr_cols, mut_cols, mgmt_cols, n_pca=n_pca, seed=seed
+        )
+        splits_dict[split] = (tr_pca, te_pca)
+
+        baselines = evaluate_all_statistical_baselines(tr_pca, te_pca)
+        if split == "scaffold":
+            nn_sp = evaluate_nearest_drug_scaffold_baseline(tr_pca, te_pca)
+            assert not np.isnan(nn_sp)
+
+        trues = te_pca["LN_IC50"].to_numpy(dtype=np.float64)
+        preds = trues + rng.normal(0.0, 0.25, size=len(trues))
+        preds_store[split] = {
+            "test_df": te_pca.reset_index(drop=True),
+            "preds": preds,
+            "trues": trues,
+            "spearman": 0.81,
+            "rmse": 0.26,
+        }
+        results_mock[split] = {
+            "baselines": baselines,
+            "model_global": {"mean": 0.81, "std": 0.02, "values": [0.82, 0.80, 0.81]},
+            "model_rmse": {"mean": 0.26, "std": 0.01, "values": [0.25, 0.27, 0.26]},
+            "model_within_cell": {"mean": 0.78, "std": 0.04, "n_cells": 4},
+        }
+
+    return {
+        "raw_df": raw_df,
+        "expr_cols": expr_cols,
+        "mut_cols": mut_cols,
+        "mgmt_cols": mgmt_cols,
+        "splits_dict": splits_dict,
+        "preds_store": preds_store,
+        "results_mock": results_mock,
+    }
 
 
 def write_synthetic_raw_csv_files(tmp_dir: Path) -> Dict[str, Path]:

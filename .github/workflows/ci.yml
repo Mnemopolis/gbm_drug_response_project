@@ -67,14 +67,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install lectrace
-          mkdir -p docs/lectrace docs/Latex_report
-          if [ -f index.html ]; then cp index.html docs/index.html; fi
-          if [ -f Latex_report/gbm_neurips_report.pdf ]; then
-            cp Latex_report/gbm_neurips_report.pdf docs/Latex_report/gbm_neurips_report.pdf
-            cp Latex_report/gbm_neurips_report.pdf docs/gbm_neurips_report.pdf
-          fi
+          mkdir -p docs/lectrace
           test -f docs/index.html
-          sed -i "s|__GITHUB_REPO_URL__|https://github.com/${{ github.repository }}|g" docs/index.html
+          test -f docs/Latex_report/gbm_neurips_report.pdf
           lectrace build Lectrace/01_gbm_ood_presentation.py --output docs/lectrace --no-incremental
           touch docs/.nojekyll
           test -f docs/lectrace/index.html
